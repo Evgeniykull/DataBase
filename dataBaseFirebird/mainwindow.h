@@ -23,10 +23,26 @@ private slots:
     void onActUserClick();
     void onActDictionaryClick();
     void onActConnectClick();
+    void onConnectClick();
+
+    void updateUsers();
+    void onAddUsersClick();
+    void addUser(int,int,QString,QString,int);
+    void deleteUsers();
+    void saveUsers();
+
+    //все add в одну функцию, передавать только модель как аргумент
+    void updateFuels();
+    void addFuels();
+    void deleteFuels();
+    void saveFuels();
 
 private:
     Ui::MainWindow *ui;
+
+    QSqlDatabase db;
     QSqlRelationalTableModel *model_users;
+    QSqlRelationalTableModel *model_fuels;
 
     void renderToolbar();
 };

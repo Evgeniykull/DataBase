@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -33,24 +33,91 @@
        <attribute name="title">
         <string>Пользователи</string>
        </attribute>
-       <widget class="QTableView" name="tableView">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>10</y>
-          <width>611</width>
-          <height>371</height>
-         </rect>
-        </property>
-        <property name="showDropIndicator" stdset="0">
-         <bool>true</bool>
-        </property>
-       </widget>
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="0" colspan="3">
+         <widget class="QTableView" name="tableUser">
+          <property name="showDropIndicator" stdset="0">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="pbAddUser">
+          <property name="text">
+           <string>Добавить</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="pbDeleteUser">
+          <property name="text">
+           <string>Удалить</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QPushButton" name="pbUpdateUser">
+          <property name="text">
+           <string>Обновить</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
-      <widget class="QWidget" name="tab2">
+      <widget class="QWidget" name="tabDictionary">
        <attribute name="title">
         <string>Справочники</string>
        </attribute>
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="0" column="0">
+         <widget class="QTabWidget" name="tabWidget_2">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="tabFuel">
+           <attribute name="title">
+            <string>Топливо</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0" colspan="3">
+             <widget class="QTableView" name="tableFuel"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="pbAddFuel">
+              <property name="text">
+               <string>Добавить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="pbDeleteFuel">
+              <property name="text">
+               <string>Удалить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QPushButton" name="pbUpdateFuel">
+              <property name="text">
+               <string>Обновить</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tabCol">
+           <attribute name="title">
+            <string>Колонки</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tabRez">
+           <attribute name="title">
+            <string>Резервуары</string>
+           </attribute>
+          </widget>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QWidget" name="tabConnect">
        <attribute name="title">
@@ -86,21 +153,14 @@
          </widget>
         </item>
         <item row="3" column="0" colspan="2">
-         <widget class="QLineEdit" name="lePassword">
+         <widget class="QLineEdit" name="leUserName">
           <property name="clearButtonEnabled">
            <bool>true</bool>
           </property>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="lblPasord">
-          <property name="text">
-           <string>Введите пароль:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="5" column="0" colspan="2">
-         <widget class="QLineEdit" name="lePassword_2">
+        <item row="7" column="0" colspan="2">
+         <widget class="QLineEdit" name="lePassword">
           <property name="echoMode">
            <enum>QLineEdit::Password</enum>
           </property>
@@ -109,7 +169,7 @@
           </property>
          </widget>
         </item>
-        <item row="6" column="1">
+        <item row="9" column="1">
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
@@ -118,6 +178,33 @@
            <size>
             <width>20</width>
             <height>272</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="lblPasord">
+          <property name="text">
+           <string>Введите пароль:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <widget class="QPushButton" name="pbConnect">
+          <property name="text">
+           <string>Подключиться</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="1">
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
            </size>
           </property>
          </spacer>
@@ -143,7 +230,15 @@
     </property>
     <addaction name="actExit"/>
    </widget>
+   <widget class="QMenu" name="menuAction">
+    <property name="title">
+     <string>Действия</string>
+    </property>
+    <addaction name="actSave"/>
+    <addaction name="actionf"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuAction"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -190,6 +285,16 @@
    </property>
    <property name="text">
     <string>Подключение</string>
+   </property>
+  </action>
+  <action name="actSave">
+   <property name="text">
+    <string>Сохранить</string>
+   </property>
+  </action>
+  <action name="actionf">
+   <property name="text">
+    <string>f</string>
    </property>
   </action>
  </widget>

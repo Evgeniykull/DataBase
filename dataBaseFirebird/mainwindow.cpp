@@ -20,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pbView, SIGNAL(clicked()), SLOT(onViewClick()));
     renderToolbar();
     ui->tabWidget->tabBar()->hide(); //для скрытия табов
+    status_bar = new QLabel(this);
+    ui->statusBar->addWidget(status_bar); //для строки состояния
 
     connect(ui->pbConnect, SIGNAL(clicked(bool)), SLOT(onConnectClick()));
     connect(ui->actSave, SIGNAL(triggered(bool)), SLOT(saveUsers()));
@@ -46,6 +48,7 @@ void MainWindow::renderToolbar() {
     connect(ui->pbUpdateUser, SIGNAL(clicked(bool)), SLOT(updateUsers()));
     connect(ui->pbAddUser, SIGNAL(clicked(bool)), SLOT(onAddUsersClick()));
     connect(ui->pbDeleteUser, SIGNAL(clicked(bool)), SLOT(deleteUsers()));
+    connect(ui->pbEditUser, SIGNAL(clicked(bool)), SLOT(onEditUsersClick()));
 
     connect(ui->pbUpdateFuel, SIGNAL(clicked(bool)), SLOT(updateFuels()));
     connect(ui->pbAddFuel, SIGNAL(clicked(bool)), SLOT(addFuels()));
@@ -76,14 +79,8 @@ void MainWindow::onConnectClick() {
     db.setPassword("123"); //ui->lePassword->text()
     bool is_open = db.open();
 
-    if(is_open) {
-        QLabel *a = new QLabel("получилось");
-        ui->statusBar->addWidget(a);
-    } else {
-        QString lastError = db.lastError().text();
-        QLabel *a = new QLabel(lastError);
-        ui->statusBar->addWidget(a);
-    }
+    QString db_status = is_open ? "Подключено" : db.lastError().text();
+    status_bar->setText(db_status);
 }
 
 void setTableFormat(QTableView *tab)
@@ -113,16 +110,9 @@ void MainWindow::onAddUsersClick() {
     addUserDialog * add_user = new addUserDialog(this);
     add_user->show();
     connect(add_user, SIGNAL(onOkClick(int,int,QString,QString,int)), SLOT(addUser(int,int,QString,QString,int)));
-    //model_users->insertRow(model_users->rowCount());
 }
 
 void MainWindow::addUser(int parentId, int cardId, QString name, QString shortName, int indexId) {
-    qDebug() << parentId;
-    qDebug() << cardId;
-    qDebug() << name;
-    qDebug() << shortName;
-    qDebug() << indexId;
-
     QSqlQuery* query = new QSqlQuery(db);
     QString statament = "INSERT INTO users (parentId, shortname, viewname, cardid, indexid) VALUES (";
     statament.append(QString::number(parentId) + ", ");
@@ -131,11 +121,41 @@ void MainWindow::addUser(int parentId, int cardId, QString name, QString shortNa
     statament.append(QString::number(cardId) + ", ");
     statament.append(QString::number(indexId));
     statament.append(")");
-    qDebug() << statament;
 
     query->exec(statament);
     if (query->lastError().isValid()) {
+        //добавить QMessage
         qDebug() << "AddUser:" << query->lastError();
+    }
+
+    updateUsers();
+}
+
+void MainWindow::onEditUsersClick() {
+    int current_row_num = ui->tableUser->currentIndex().row();
+    if (current_row_num < 0) {
+        return;
+    }
+    int userid = model_users->record(current_row_num).value("userid").toInt();
+
+    addUserDialog * add_user = new addUserDialog(userid, db, this);
+    add_user->show();
+    connect(add_user, SIGNAL(onOkClick(int, int,int,QString,QString,int)), SLOT(editUsers(int,int,int,QString,QString,int)));
+}
+
+void MainWindow::editUsers(int userId, int parentId, int cardId, QString name, QString shortName, int indexId) {
+    QSqlQuery* query = new QSqlQuery(db);
+    QString statament = QString("UPDATE users SET parentid=%1, shortname=%2, viewname=%3, cardid=%4, indexid=%5 WHERE userid=%6")
+            .arg(QString::number(parentId))
+            .arg("'" +  shortName + "'")
+            .arg("'" + name + "'")
+            .arg(QString::number(cardId))
+            .arg(QString::number(indexId))
+            .arg(QString::number(userId));
+
+    query->exec(statament);
+    if (query->lastError().isValid()) {
+        qDebug() << "Error:" << query->lastError();
     }
 
     updateUsers();
@@ -145,6 +165,9 @@ void MainWindow::addUser(int parentId, int cardId, QString name, QString shortNa
 void MainWindow::deleteUsers()
 {
     int current_row_num = ui->tableUser->currentIndex().row();
+    if (current_row_num < 0) {
+        return;
+    }
     int userid = model_users->record(current_row_num).value("userid").toInt();
 
     QSqlQuery* query = new QSqlQuery(db);

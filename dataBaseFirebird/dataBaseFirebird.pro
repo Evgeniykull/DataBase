@@ -26,11 +26,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    adduserdialog.cpp
+    adduserdialog.cpp \
+    modeluser.cpp
 
 HEADERS += \
         mainwindow.h \
-    adduserdialog.h
+    adduserdialog.h \
+    modeluser.h
 
 FORMS += \
         mainwindow.ui \

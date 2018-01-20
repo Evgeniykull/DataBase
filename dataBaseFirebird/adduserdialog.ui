@@ -32,9 +32,9 @@
   <widget class="QLineEdit" name="leParentId">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>130</x>
      <y>40</y>
-     <width>361</width>
+     <width>341</width>
      <height>20</height>
     </rect>
    </property>
@@ -44,7 +44,7 @@
     <rect>
      <x>20</x>
      <y>40</y>
-     <width>81</width>
+     <width>101</width>
      <height>16</height>
     </rect>
    </property>
@@ -62,15 +62,15 @@
     </rect>
    </property>
    <property name="text">
-    <string>Введите данные для новоо пользователя</string>
+    <string>Введите данные для нового пользователя</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="leShortName">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>130</x>
      <y>70</y>
-     <width>361</width>
+     <width>341</width>
      <height>20</height>
     </rect>
    </property>
@@ -80,20 +80,20 @@
     <rect>
      <x>20</x>
      <y>70</y>
-     <width>81</width>
+     <width>101</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>Shortname:</string>
+    <string>Короткое Имя:</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="leViewName">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>130</x>
      <y>100</y>
-     <width>361</width>
+     <width>341</width>
      <height>20</height>
     </rect>
    </property>
@@ -103,20 +103,20 @@
     <rect>
      <x>20</x>
      <y>100</y>
-     <width>81</width>
+     <width>101</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>ViewName:</string>
+    <string>Отображаемое Имя:</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="leCardId">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>130</x>
      <y>130</y>
-     <width>361</width>
+     <width>341</width>
      <height>20</height>
     </rect>
    </property>
@@ -126,20 +126,20 @@
     <rect>
      <x>20</x>
      <y>130</y>
-     <width>81</width>
+     <width>101</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>CardId:</string>
+    <string>Id катры</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="leIndexId">
    <property name="geometry">
     <rect>
-     <x>110</x>
+     <x>130</x>
      <y>160</y>
-     <width>361</width>
+     <width>341</width>
      <height>20</height>
     </rect>
    </property>
@@ -149,12 +149,12 @@
     <rect>
      <x>20</x>
      <y>160</y>
-     <width>81</width>
+     <width>101</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
-    <string>IndexId:</string>
+    <string>Id пользователя:</string>
    </property>
   </widget>
  </widget>

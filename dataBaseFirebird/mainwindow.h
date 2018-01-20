@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlTableModel>
 #include <QtSql/QSqlRelationalTableModel>
 
 namespace Ui {
@@ -28,11 +27,9 @@ private slots:
 
     void updateUsers();
     void onAddUsersClick();
-    void addUser(int,int,QString,QString,int);
     void deleteUsers();
-    void saveUsers();
+    //void saveUsers();
     void onEditUsersClick();
-    void editUsers(int,int,int,QString,QString,int);
 
     //все add в одну функцию, передавать только модель как аргумент
     void updateFuels();

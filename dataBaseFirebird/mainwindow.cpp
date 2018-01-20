@@ -10,6 +10,7 @@
 #include <QDebug>
 
 #include "adduserdialog.h"
+#include "modeluser.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -107,28 +108,9 @@ void MainWindow::updateUsers() {
 }
 
 void MainWindow::onAddUsersClick() {
-    addUserDialog * add_user = new addUserDialog(this);
-    add_user->show();
-    connect(add_user, SIGNAL(onOkClick(int,int,QString,QString,int)), SLOT(addUser(int,int,QString,QString,int)));
-}
-
-void MainWindow::addUser(int parentId, int cardId, QString name, QString shortName, int indexId) {
-    QSqlQuery* query = new QSqlQuery(db);
-    QString statament = "INSERT INTO users (parentId, shortname, viewname, cardid, indexid) VALUES (";
-    statament.append(QString::number(parentId) + ", ");
-    statament.append("'" + shortName + "', ");
-    statament.append("'" + name + "', ");
-    statament.append(QString::number(cardId) + ", ");
-    statament.append(QString::number(indexId));
-    statament.append(")");
-
-    query->exec(statament);
-    if (query->lastError().isValid()) {
-        //добавить QMessage
-        qDebug() << "AddUser:" << query->lastError();
-    }
-
-    updateUsers();
+    ModelUser *user_model = new ModelUser(db);
+    connect(user_model, SIGNAL(needUpdate()), SLOT(updateUsers()));
+    user_model->addUser();
 }
 
 void MainWindow::onEditUsersClick() {
@@ -136,29 +118,11 @@ void MainWindow::onEditUsersClick() {
     if (current_row_num < 0) {
         return;
     }
+
+    ModelUser *user_model = new ModelUser(db);
     int userid = model_users->record(current_row_num).value("userid").toInt();
-
-    addUserDialog * add_user = new addUserDialog(userid, db, this);
-    add_user->show();
-    connect(add_user, SIGNAL(onOkClick(int, int,int,QString,QString,int)), SLOT(editUsers(int,int,int,QString,QString,int)));
-}
-
-void MainWindow::editUsers(int userId, int parentId, int cardId, QString name, QString shortName, int indexId) {
-    QSqlQuery* query = new QSqlQuery(db);
-    QString statament = QString("UPDATE users SET parentid=%1, shortname=%2, viewname=%3, cardid=%4, indexid=%5 WHERE userid=%6")
-            .arg(QString::number(parentId))
-            .arg("'" +  shortName + "'")
-            .arg("'" + name + "'")
-            .arg(QString::number(cardId))
-            .arg(QString::number(indexId))
-            .arg(QString::number(userId));
-
-    query->exec(statament);
-    if (query->lastError().isValid()) {
-        qDebug() << "Error:" << query->lastError();
-    }
-
-    updateUsers();
+    connect(user_model, SIGNAL(needUpdate()), SLOT(updateUsers()));
+    user_model->editUsers(userid);
 }
 
 //удаление происходит сразу
@@ -168,30 +132,11 @@ void MainWindow::deleteUsers()
     if (current_row_num < 0) {
         return;
     }
+
+    ModelUser *user_model = new ModelUser(db);
+    connect(user_model, SIGNAL(needUpdate()), SLOT(updateUsers()));
     int userid = model_users->record(current_row_num).value("userid").toInt();
-
-    QSqlQuery* query = new QSqlQuery(db);
-    QString statament = "DELETE FROM users WHERE userid=";
-    statament.append(QString::number(userid));
-
-    query->exec(statament);
-    if (query->lastError().isValid()) {
-        qDebug() << "RemoveRow:" << query->lastError();
-    }
-
-    updateUsers();
-}
-
-void MainWindow::saveUsers()
-{
-    model_users->database().transaction();
-    if(model_users->submitAll()) {
-        model_users->database().commit();
-    } else {
-        qDebug() << model_users->lastError();
-        model_users->database().rollback();
-        model_users->revertAll();
-    }
+    user_model->deleteUsers(userid);
 }
 
 void MainWindow::updateFuels() {

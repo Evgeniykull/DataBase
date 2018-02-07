@@ -27,12 +27,16 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     adduserdialog.cpp \
-    modeluser.cpp
+    modeluser.cpp \
+    tree/treeitem.cpp \
+    tree/treemodel.cpp
 
 HEADERS += \
         mainwindow.h \
     adduserdialog.h \
-    modeluser.h
+    modeluser.h \
+    tree/treeitem.h \
+    tree/treemodel.h
 
 FORMS += \
         mainwindow.ui \

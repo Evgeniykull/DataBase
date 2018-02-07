@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlRelationalTableModel>
+#include <tree/treemodel.h>
 
 namespace Ui {
 class MainWindow;
@@ -28,7 +29,6 @@ private slots:
     void updateUsers();
     void onAddUsersClick();
     void deleteUsers();
-    //void saveUsers();
     void onEditUsersClick();
 
     //все add в одну функцию, передавать только модель как аргумент
@@ -44,6 +44,7 @@ private:
     QSqlDatabase db;
     QSqlRelationalTableModel *model_users;
     QSqlRelationalTableModel *model_fuels;
+    TreeModel *model;
 
     void renderToolbar();
 };

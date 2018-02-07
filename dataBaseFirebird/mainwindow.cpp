@@ -101,10 +101,10 @@ void MainWindow::updateUsers() {
     model_users->select();
     ui->tableUser->setModel(model_users);
     setTableFormat(ui->tableUser);
-    //qDebug() << model_users->record(model_users->rowCount()-1);
-    /*for (int i=0; i<model_users->rowCount()-1; i++) {
-        qDebug() << model_users->record(i).value("parentid");
-    }*/
+
+    model = new TreeModel(*model_users, ui->teUserInfo);
+    ui->treeView->setModel(model);
+    connect(ui->treeView, SIGNAL(clicked(QModelIndex)), model, SLOT(Clicked(QModelIndex)));
 }
 
 void MainWindow::onAddUsersClick() {

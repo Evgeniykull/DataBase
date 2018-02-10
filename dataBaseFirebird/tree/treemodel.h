@@ -31,7 +31,8 @@ public slots:
 private:
     //void setupModelData(const QStringList &lines, TreeItem *parent);
     TreeItem *rootItem;
-    QMap<int, TreeItem> *m_map;
+    QMap<int, TreeItem*> *m_map;
+    QList<TreeItem*> *not_visible_item;
 
     struct ITEMS {
         int id;
@@ -40,6 +41,7 @@ private:
     };
     QList<ITEMS> *items_list;
     QTextEdit * textEdit;
+
 };
 
 #endif // TREEMODEL_H

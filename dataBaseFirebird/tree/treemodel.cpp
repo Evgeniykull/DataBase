@@ -10,24 +10,46 @@ TreeModel::TreeModel(const QSqlRelationalTableModel &data, QTextEdit *tE, QObjec
     rootItem = new TreeItem(lis);
     items_list  = new QList<ITEMS>;
     textEdit = tE;
+    m_map = new QMap<int, TreeItem*>;
+    not_visible_item = new QList<TreeItem*>;
 
     for (int i=0; i<data.rowCount(); i++) {
         QList<QVariant> *chld_list = new QList<QVariant>;
         chld_list->append(data.record(i).value("viewname"));
         TreeItem *item = new TreeItem(*chld_list, data.record(i));
 
-        ITEMS *new_item = new ITEMS();
-        new_item->id = data.record(i).value("userid").toInt();
-        new_item->parentId = data.record(i).value("parentid").toInt();
-        new_item->item = item;
-
-        items_list->push_back(*new_item);
+        m_map->insert(data.record(i).value("userid").toInt(), item);
         if (item->getParentId() == 0) {
             rootItem->appendChild(item);
+        } else {
+            not_visible_item->push_back(item);
         }
     }
 
-    //цикл по map и сопоставление parent и child
+    //цикл и сопоставление parent и child
+    //получился сложный, по возможности переделать
+    //работает только c 'правильными' данными
+    //если parentId будет такой, которого нет - бесконечный цикл выйдет
+    while (!not_visible_item->isEmpty()) {
+        QList<int> index_keys = m_map->keys();
+        QList<TreeItem*> added_index;
+        for (int i = 0; i < not_visible_item->size(); i++){
+            TreeItem * nv_item = not_visible_item->value(i);
+            int item_parent_id = nv_item->getParentId();
+            //здесь другая проверка?
+            int idx_in_map = index_keys.indexOf(item_parent_id);
+            if (idx_in_map >= 0) {
+                TreeItem * it = m_map->value(item_parent_id); //получение родетеля
+                it->appendChild(not_visible_item->value(i)); //добавление дочернего
+                added_index.push_back(nv_item); //запоминаем элемент, чтобы в дальнейшем удалить
+            }
+        }
+
+        for(int j = 0; j < added_index.size(); j++) {
+            not_visible_item->removeOne(added_index[j]);
+        }
+        added_index.clear();
+    }
 }
 
 TreeModel::~TreeModel()

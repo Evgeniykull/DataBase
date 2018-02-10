@@ -57,11 +57,13 @@ TreeItem *TreeItem::parentItem()
     return m_parentItem;
 }
 
-//в конструктор передавать ссылку на форму
-//в функции выводить на этой форме нужные элементы
 void TreeItem::Clicked(QTextEdit *tE) {
-    qDebug() << "cl1";
-    tE->setText("WWWW");
+    QString user_info = "ID Пользователя: " + item_record.value("userid").toString() + "\n" +
+            "ID Родителя: " + item_record.value("parentid").toString() + "\n" +
+            "Короткое имя: " + item_record.value("shortname").toString() + "\n" +
+            "Имя пользователя: " + item_record.value("viewname").toString() + "\n" +
+            "ID Карты: " + item_record.value("cardid").toString() + "\n";
+    tE->setText(user_info);
 }
 
 int TreeItem::getElemIndex() {

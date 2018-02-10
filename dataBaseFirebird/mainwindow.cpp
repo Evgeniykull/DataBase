@@ -105,6 +105,8 @@ void MainWindow::updateUsers() {
     model = new TreeModel(*model_users, ui->teUserInfo);
     ui->treeView->setModel(model);
     connect(ui->treeView, SIGNAL(clicked(QModelIndex)), model, SLOT(Clicked(QModelIndex)));
+
+    ui->teUserInfo->clear();
 }
 
 void MainWindow::onAddUsersClick() {

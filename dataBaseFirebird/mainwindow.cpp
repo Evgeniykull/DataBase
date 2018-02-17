@@ -7,10 +7,13 @@
 #include <QSqlRecord>
 #include <QSqlQuery>
 #include <QByteArray>
+#include <QSerialPortInfo>
+#include <QThread>
 #include <QDebug>
 
 #include "adduserdialog.h"
 #include "modeluser.h"
+#include "utils/treadworker.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -21,12 +24,19 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pbView, SIGNAL(clicked()), SLOT(onViewClick()));
     renderToolbar();
     ui->tabWidget->tabBar()->hide(); //для скрытия табов
-    status_bar = new QLabel(this);
+    status_bar = new QLabel(this);    
+    port_status = new QLabel(this);
     ui->statusBar->addWidget(status_bar); //для строки состояния
+    ui->statusBar->addWidget(port_status); //для строки состояния
 
     connect(ui->pbConnect, SIGNAL(clicked(bool)), SLOT(onConnectClick()));
     connect(ui->actSave, SIGNAL(triggered(bool)), SLOT(saveUsers()));
     connect(ui->actionf, SIGNAL(triggered(bool)), SLOT(saveFuels()));
+
+    //connect to device
+    port = new QSerialPort(this);
+    port_ = new Port();
+    ui->verticalLayout->addWidget(port_);
 }
 
 MainWindow::~MainWindow()
@@ -95,7 +105,8 @@ void setTableFormat(QTableView *tab)
 }
 
 void MainWindow::updateUsers() {
-    model_users = new QSqlRelationalTableModel(0, db);
+    //пока не требуется для отладки
+    /*model_users = new QSqlRelationalTableModel(0, db);
     model_users->setTable("users");
     model_users->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model_users->select();
@@ -106,7 +117,9 @@ void MainWindow::updateUsers() {
     ui->treeView->setModel(model);
     connect(ui->treeView, SIGNAL(clicked(QModelIndex)), model, SLOT(Clicked(QModelIndex)));
 
-    ui->teUserInfo->clear();
+    ui->teUserInfo->clear();*/
+
+    getUserIndex();
 }
 
 void MainWindow::onAddUsersClick() {
@@ -169,4 +182,78 @@ void MainWindow::saveFuels()
         model_fuels->database().rollback();
         model_fuels->revertAll();
     }
+}
+
+
+void MainWindow::openPort()
+{
+    port->setPortName(SettingsPort.name);
+    if(port->isOpen()) {
+        return;
+    }
+    if (port->open(QIODevice::ReadWrite)) {
+        if (port->setBaudRate(SettingsPort.baudRate)
+                && port->setDataBits(SettingsPort.dataBits)
+                && port->setParity(SettingsPort.parity)
+                && port->setStopBits(SettingsPort.stopBits)
+                && port->setFlowControl(SettingsPort.flowControl)) {
+            if (port->isOpen()) {
+                port_status->setText("Порт открыт");
+            }
+        } else {
+            port->close();
+            port_status->setText(port->errorString());
+        }
+    } else {
+        port->close();
+        port_status->setText(port->errorString());
+    }
+}
+
+void MainWindow::closePort()
+{
+    if (port->isOpen()) {
+        port->close();
+    }
+    port_status->setText("Port is closed");
+}
+
+//не нужная функция
+void MainWindow::changePort(QString name)
+{
+    if (name.isEmpty()) return;
+}
+
+
+void MainWindow::getUserIndex() {
+    /*openPort();
+    if (!port->isOpen()) {
+        ui->teUserInfo->setText("Port not open");
+        return;
+    }
+
+    QThread *thread = new QThread;
+    treadWorker *worker = new treadWorker();
+    worker->setTransferParams("get UserIndex[0]",
+                              port,
+                              0,
+                              //ui->leAddres->text().toInt(),
+                              byteOnPackage
+                             );
+
+    connect(thread, SIGNAL(started()), worker, SLOT(transferData()));
+    connect(worker, SIGNAL(finished(QByteArray)), this, SLOT(endTransmitData(QByteArray)));
+    worker->moveToThread(thread);
+    thread->start();*/
+    //новый класс port
+    port_->writeData("get UserIndex[0]");
+}
+
+#include "utils/jsonconvertor.h"
+void MainWindow::endTransmitData(QByteArray data) {
+    qDebug() << data;
+    JsonConvertor *convertor = new JsonConvertor();
+    ui->teUserInfo->setText(convertor->dataToJson(data));
+    //port->close();
+    //массив получил, теперь разобрать
 }

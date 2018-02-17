@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>721</width>
-    <height>533</height>
+    <width>602</width>
+    <height>466</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -92,20 +92,10 @@
             <string>Топливо</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="0" colspan="4">
-             <widget class="QTableView" name="tableFuel"/>
-            </item>
             <item row="1" column="0">
              <widget class="QPushButton" name="pbAddFuel">
               <property name="text">
                <string>Добавить</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QPushButton" name="pbEditFuel">
-              <property name="text">
-               <string>Редактировать</string>
               </property>
              </widget>
             </item>
@@ -120,6 +110,16 @@
              <widget class="QPushButton" name="pbUpdateFuel">
               <property name="text">
                <string>Обновить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0" colspan="4">
+             <widget class="QTableView" name="tableFuel"/>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="pbEditFuel">
+              <property name="text">
+               <string>Редактировать</string>
               </property>
              </widget>
             </item>
@@ -143,91 +143,97 @@
        <attribute name="title">
         <string>Подключение</string>
        </attribute>
-       <layout class="QGridLayout" name="gridLayout_2">
+       <layout class="QGridLayout" name="gridLayout_6">
         <item row="0" column="0">
-         <widget class="QLabel" name="lblPath">
-          <property name="text">
-           <string>Укажите путь к базе данных:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="0" colspan="2">
-         <layout class="QHBoxLayout" name="horizontalLayout">
+         <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QLineEdit" name="lePath"/>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pbView">
-            <property name="text">
-             <string>Обзор</string>
+           <widget class="QGroupBox" name="groupBox">
+            <property name="title">
+             <string>Укажите путь к базе данных:</string>
             </property>
+            <layout class="QGridLayout" name="gridLayout_2">
+             <item row="1" column="0" colspan="2">
+              <widget class="QLabel" name="lblUserName">
+               <property name="text">
+                <string>Введите имя пользвателя:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="0" colspan="2">
+              <layout class="QHBoxLayout" name="horizontalLayout">
+               <item>
+                <widget class="QLineEdit" name="lePath"/>
+               </item>
+               <item>
+                <widget class="QPushButton" name="pbView">
+                 <property name="text">
+                  <string>Обзор</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="lblPasord">
+               <property name="text">
+                <string>Введите пароль:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0" colspan="2">
+              <widget class="QLineEdit" name="lePassword">
+               <property name="echoMode">
+                <enum>QLineEdit::Password</enum>
+               </property>
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QPushButton" name="pbConnect">
+               <property name="text">
+                <string>Подключиться</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>443</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="6" column="1">
+              <spacer name="verticalSpacer">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="2" column="0" colspan="2">
+              <widget class="QLineEdit" name="leUserName">
+               <property name="clearButtonEnabled">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
          </layout>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="lblUserName">
-          <property name="text">
-           <string>Введите имя пользвателя:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0" colspan="2">
-         <widget class="QLineEdit" name="leUserName">
-          <property name="clearButtonEnabled">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="7" column="0" colspan="2">
-         <widget class="QLineEdit" name="lePassword">
-          <property name="echoMode">
-           <enum>QLineEdit::Password</enum>
-          </property>
-          <property name="clearButtonEnabled">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="9" column="1">
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>272</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item row="4" column="0">
-         <widget class="QLabel" name="lblPasord">
-          <property name="text">
-           <string>Введите пароль:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="0">
-         <widget class="QPushButton" name="pbConnect">
-          <property name="text">
-           <string>Подключиться</string>
-          </property>
-         </widget>
-        </item>
-        <item row="8" column="1">
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </widget>
@@ -240,7 +246,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>721</width>
+     <width>602</width>
      <height>21</height>
     </rect>
    </property>

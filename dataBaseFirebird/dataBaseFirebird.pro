@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql
+QT       += core gui sql serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -29,15 +29,27 @@ SOURCES += \
     adduserdialog.cpp \
     modeluser.cpp \
     tree/treeitem.cpp \
-    tree/treemodel.cpp
+    tree/treemodel.cpp \
+    utils/jsonconvertor.cpp \
+    utils/treadworker.cpp \
+    utils/catalogswrither.cpp \
+    port/portsettings.cpp \
+    port/port.cpp
 
 HEADERS += \
         mainwindow.h \
     adduserdialog.h \
     modeluser.h \
     tree/treeitem.h \
-    tree/treemodel.h
+    tree/treemodel.h \
+    utils/jsonconvertor.h \
+    utils/treadworker.h \
+    utils/catalogswrither.h \
+    port/portsettings.h \
+    port/port.h
 
 FORMS += \
         mainwindow.ui \
-    adduserdialog.ui
+    adduserdialog.ui \
+    port/portsettings.ui \
+    port/port.ui

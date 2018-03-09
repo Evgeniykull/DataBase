@@ -7,13 +7,14 @@
 #include <QSqlRecord>
 #include <QSqlQuery>
 #include <QByteArray>
-#include <QSerialPortInfo>
 #include <QThread>
 #include <QDebug>
 
-#include "adduserdialog.h"
-#include "modeluser.h"
+#include "dialogs/adduserdialog.h"
+#include "models/modeluser.h"
+#include "models/modelfuels.h"
 #include "utils/treadworker.h"
+#include "utils/jsonconvertor.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -34,9 +35,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionf, SIGNAL(triggered(bool)), SLOT(saveFuels()));
 
     //connect to device
-    port = new QSerialPort(this);
-    port_ = new Port();
-    ui->verticalLayout->addWidget(port_);
+    port = new Port();
+    ui->verticalLayout->addWidget(port);
 }
 
 MainWindow::~MainWindow()
@@ -64,6 +64,19 @@ void MainWindow::renderToolbar() {
     connect(ui->pbUpdateFuel, SIGNAL(clicked(bool)), SLOT(updateFuels()));
     connect(ui->pbAddFuel, SIGNAL(clicked(bool)), SLOT(addFuels()));
     connect(ui->pbDeleteFuel, SIGNAL(clicked(bool)), SLOT(deleteFuels()));
+    connect(ui->pbEditFuel, SIGNAL(clicked(bool)), SLOT(onEditFuelsClick()));
+
+    connect(ui->pbUpdateTanks, SIGNAL(clicked(bool)), SLOT(updateTanks()));
+    connect(ui->pbAddTanks, SIGNAL(clicked(bool)), SLOT(addTanks()));
+    connect(ui->pbDeleteTanks, SIGNAL(clicked(bool)), SLOT(deleteTanks()));
+    connect(ui->pbEditTanks, SIGNAL(clicked(bool)), SLOT(onEditTanksClick()));
+
+    connect(ui->pbUpdatePoints, SIGNAL(clicked(bool)), SLOT(updatePoints()));
+    connect(ui->pbAddPoints, SIGNAL(clicked(bool)), SLOT(addPoints()));
+    connect(ui->pbDeletePoints, SIGNAL(clicked(bool)), SLOT(deletePoints()));
+    connect(ui->pbEditPoints, SIGNAL(clicked(bool)), SLOT(onEditPointsClick()));
+
+    connect(ui->actConfigurate, SIGNAL(triggered(bool)), SLOT(getFuelIndex()));
 }
 
 void MainWindow::onViewClick() {
@@ -102,23 +115,23 @@ void setTableFormat(QTableView *tab)
     tab->setSortingEnabled(true);               // Сортировка таблицы
     tab->sortByColumn(1,Qt::AscendingOrder);    // Порядок сортировки по умолчанию
     tab->setColumnHidden(0, true);              // Скрываем колонку с индексом
+    tab->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
 
 void MainWindow::updateUsers() {
-    //пока не требуется для отладки
     /*model_users = new QSqlRelationalTableModel(0, db);
     model_users->setTable("users");
     model_users->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model_users->select();
-    ui->tableUser->setModel(model_users);
-    setTableFormat(ui->tableUser);
 
     model = new TreeModel(*model_users, ui->teUserInfo);
     ui->treeView->setModel(model);
     connect(ui->treeView, SIGNAL(clicked(QModelIndex)), model, SLOT(Clicked(QModelIndex)));
+    connect(ui->treeView, SIGNAL(clicked(QModelIndex)), SLOT(onUserClick(QModelIndex)));
 
     ui->teUserInfo->clear();*/
 
+    //работа с устройством
     getUserIndex();
 }
 
@@ -129,28 +142,27 @@ void MainWindow::onAddUsersClick() {
 }
 
 void MainWindow::onEditUsersClick() {
-    int current_row_num = ui->tableUser->currentIndex().row();
-    if (current_row_num < 0) {
+    if (ui->treeView->currentIndex().row() < 0) {
         return;
     }
 
+    int userid = ui->teUserInfo->toPlainText().split("\n").at(0).split(":")[1].toInt();
     ModelUser *user_model = new ModelUser(db);
-    int userid = model_users->record(current_row_num).value("userid").toInt();
     connect(user_model, SIGNAL(needUpdate()), SLOT(updateUsers()));
     user_model->editUsers(userid);
 }
 
 //удаление происходит сразу
+//TODO добавить подтверждение
 void MainWindow::deleteUsers()
 {
-    int current_row_num = ui->tableUser->currentIndex().row();
-    if (current_row_num < 0) {
+    if (ui->treeView->currentIndex().row() < 0) {
         return;
     }
 
+    int userid = ui->teUserInfo->toPlainText().split("\n").at(0).split(":")[1].toInt();
     ModelUser *user_model = new ModelUser(db);
     connect(user_model, SIGNAL(needUpdate()), SLOT(updateUsers()));
-    int userid = model_users->record(current_row_num).value("userid").toInt();
     user_model->deleteUsers(userid);
 }
 
@@ -159,101 +171,239 @@ void MainWindow::updateFuels() {
     model_fuels->setTable("fuels");
     model_fuels->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model_fuels->select();
+    //model_fuels->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableFuel->setModel(model_fuels);
     setTableFormat(ui->tableFuel);
 }
 
 void MainWindow::addFuels() {
-    model_fuels->insertRow(model_fuels->rowCount());
+    ModelFuels *fuel_model = new ModelFuels(db);
+    connect(fuel_model, SIGNAL(needUpdate()), SLOT(updateFuels()));
+    fuel_model->addFuels();
 }
 
 void MainWindow::deleteFuels() {
-    QModelIndex index = ui->tableFuel->currentIndex();
-    model_fuels->removeRow(index.row());
-}
-
-void MainWindow::saveFuels()
-{
-    model_fuels->database().transaction();
-    if(model_fuels->submitAll()) {
-        model_fuels->database().commit();
-    } else {
-        qDebug() << model_fuels->lastError();
-        model_fuels->database().rollback();
-        model_fuels->revertAll();
-    }
-}
-
-
-void MainWindow::openPort()
-{
-    port->setPortName(SettingsPort.name);
-    if(port->isOpen()) {
+    QModelIndex iid = ui->tableFuel->currentIndex();
+    //работает, но!
+    //r было приватным
+    int idx = iid.r;
+    if (idx < 0) {
         return;
     }
-    if (port->open(QIODevice::ReadWrite)) {
-        if (port->setBaudRate(SettingsPort.baudRate)
-                && port->setDataBits(SettingsPort.dataBits)
-                && port->setParity(SettingsPort.parity)
-                && port->setStopBits(SettingsPort.stopBits)
-                && port->setFlowControl(SettingsPort.flowControl)) {
-            if (port->isOpen()) {
-                port_status->setText("Порт открыт");
+
+    ModelFuels *fuel_model = new ModelFuels(db);
+    connect(fuel_model, SIGNAL(needUpdate()), SLOT(updateFuels()));
+    //а если рекорд достать через QModelIndex?
+    int fuelid = model_fuels->record(idx).value("fueldid").toInt();
+    fuel_model->deleteFuels(fuelid);
+}
+
+void MainWindow::onEditFuelsClick() {
+    int idx = ui->tableFuel->currentIndex().r;
+    if (idx < 0) {
+        return;
+    }
+
+    ModelFuels *fuel_model = new ModelFuels(db);
+    connect(fuel_model, SIGNAL(needUpdate()), SLOT(updateFuels()));
+    int fuelid = model_fuels->record(idx).value("fueldid").toInt();
+    fuel_model->editFuels(fuelid);
+}
+
+void MainWindow::updateTanks() {
+    model_tanks = new QSqlRelationalTableModel(0, db);
+    model_tanks->setTable("tanks");
+    model_tanks->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model_tanks->select();
+    ui->tableTanks->setModel(model_tanks);
+    setTableFormat(ui->tableTanks);
+}
+
+#include "models/modeltanks.h"
+void MainWindow::addTanks() {
+    ModelTanks *tank_model = new ModelTanks(db);
+    connect(tank_model, SIGNAL(needUpdate()), SLOT(updateTanks()));
+    tank_model->addTanks();
+}
+
+void MainWindow::deleteTanks() {
+    QModelIndex iid = ui->tableTanks->currentIndex();
+    //работает, но!
+    //r было приватным
+    int idx = iid.r;
+    if (idx < 0) {
+        return;
+    }
+
+    ModelTanks *tanks_model = new ModelTanks(db);
+    connect(tanks_model, SIGNAL(needUpdate()), SLOT(updateTanks()));
+    //а если рекорд достать через QModelIndex?
+    int tankid = model_tanks->record(idx).value("id").toInt();
+    tanks_model->deleteTanks(tankid);
+}
+
+void MainWindow::onEditTanksClick() {
+    int idx = ui->tableTanks->currentIndex().r;
+    if (idx < 0) {
+        return;
+    }
+
+    ModelTanks *tanks_model = new ModelTanks(db);
+    connect(tanks_model, SIGNAL(needUpdate()), SLOT(updateTanks()));
+    int tankid = model_tanks->record(idx).value("id").toInt();
+    tanks_model->editTanks(tankid);
+}
+
+void MainWindow::updatePoints() {
+    model_points = new QSqlRelationalTableModel(0, db);
+    model_points->setTable("points");
+    model_points->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model_points->select();
+    ui->tablePoints->setModel(model_points);
+    setTableFormat(ui->tablePoints);
+}
+
+#include "models/modelpoints.h"
+void MainWindow::addPoints() {
+    ModelPoints *point_model = new ModelPoints(db);
+    connect(point_model, SIGNAL(needUpdate()), SLOT(updatePoints()));
+    point_model->addPoint();
+}
+
+void MainWindow::deletePoints() {
+    QModelIndex iid = ui->tablePoints->currentIndex();
+    int idx = iid.r;
+    if (idx < 0) {
+        return;
+    }
+
+    ModelPoints *point_model = new ModelPoints(db);
+    connect(point_model, SIGNAL(needUpdate()), SLOT(updatePoints()));
+    int pointid = model_points->record(idx).value("id").toInt();
+    point_model->deletePoint(pointid);
+}
+
+void MainWindow::onEditPointsClick() {
+    int idx = ui->tablePoints->currentIndex().r;
+    if (idx < 0) {
+        return;
+    }
+
+    ModelPoints *point_model = new ModelPoints(db);
+    connect(point_model, SIGNAL(needUpdate()), SLOT(updatePoints()));
+    int pointid = model_points->record(idx).value("id").toInt();
+    point_model->editPoint(pointid);
+}
+
+//по идее нужен только set
+void MainWindow::getFuelIndex() {
+    //конфигурация топлива
+    /*ModelFuels *fuel_model = new ModelFuels(db);
+    QList<QString> data = fuel_model->configureFuels();
+
+    if (data.isEmpty()) {
+        qDebug() << "BD not connected!";
+        return;
+    }
+
+    bool ok = port->changeAccess(1);
+    if (ok) {
+        for(int i=0; i<data.length(); i++){
+            QByteArray conf_answ = port->writeData(data.at(i).toUtf8());
+            if (conf_answ.indexOf("OK") < 0) {
+                qDebug() << "error on configurate fuel #" << i;
             }
-        } else {
-            port->close();
-            port_status->setText(port->errorString());
         }
-    } else {
-        port->close();
-        port_status->setText(port->errorString());
     }
-}
+    port->changeAccess(0);*/
 
-void MainWindow::closePort()
-{
-    if (port->isOpen()) {
-        port->close();
-    }
-    port_status->setText("Port is closed");
-}
+    //ui->textEdit->setText(port->writeData("get Установки.Резервуары[0]"));
+    ui->textEdit->setText(port->writeData("get Установки.Колонки[0]"));
 
-//не нужная функция
-void MainWindow::changePort(QString name)
-{
-    if (name.isEmpty()) return;
-}
 
+    /*QByteArray query = "get Установки.ВидыТоплива";
+    QByteArray answ = port->writeData(query);
+    int arr_start, arr_len;
+    parseArray(answ, arr_start, arr_len);
+    QVector<int> *indexes = getDataByLoop(query, arr_start, arr_len, "Топливо");
+    qDebug() << indexes;*/
+}
 
 void MainWindow::getUserIndex() {
-    /*openPort();
-    if (!port->isOpen()) {
-        ui->teUserInfo->setText("Port not open");
-        return;
+    //qDebug() << port->writeData("get UserIndex[0]");
+    //qDebug() << port->writeData("get Установки.ВидыТоплива[0]");
+    QByteArray query = "get UserIndex";
+    QByteArray answ = port->writeData(query);
+    int arr_start, arr_len;
+    parseArray(answ, arr_start, arr_len);
+    //цикл от start с перебором всех
+    QVector<int> *indexes = getDataByLoop(query, arr_start, arr_len, "UserID");
+    QMap<int, QJsonObject> *device_users = getUsersOnDevice(*indexes);
+    //как получили map, проходимся по его ключам, сопоставляем json и записи из БД
+    QList<int> keys = device_users->keys();
+    for (int i = 0; i < keys.length(); i++) {
+        //обращение к базе с get userid=keys[i]
+        qDebug() << QString::number(keys[i]);
+        QSqlQuery* query = new QSqlQuery(db);
+        QString statament = QString("SELECT * FROM users WHERE userid=%1").arg(QString::number(keys[i]));
+        query->exec(statament);
+        query->next();
+        QString answ_from_base = query->value(0).toString();
+        qDebug() << answ_from_base;
+        //если пусто, если нет...
     }
-
-    QThread *thread = new QThread;
-    treadWorker *worker = new treadWorker();
-    worker->setTransferParams("get UserIndex[0]",
-                              port,
-                              0,
-                              //ui->leAddres->text().toInt(),
-                              byteOnPackage
-                             );
-
-    connect(thread, SIGNAL(started()), worker, SLOT(transferData()));
-    connect(worker, SIGNAL(finished(QByteArray)), this, SLOT(endTransmitData(QByteArray)));
-    worker->moveToThread(thread);
-    thread->start();*/
-    //новый класс port
-    port_->writeData("get UserIndex[0]");
 }
 
-#include "utils/jsonconvertor.h"
-void MainWindow::endTransmitData(QByteArray data) {
-    qDebug() << data;
-    JsonConvertor *convertor = new JsonConvertor();
-    ui->teUserInfo->setText(convertor->dataToJson(data));
-    //port->close();
-    //массив получил, теперь разобрать
+void mid_function() {
+    //TODO
+    //значение лучше из файла брать
+    QString empty_user = "{\"UserID\":2,\"ParentID\":0,\"ViewName\":\"User2\",\"Flags\":0,\"CardID\":0,\"Limits[]\":[{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0}],\"СLimits[]\":[{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0,\"Cn\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0,\"Cn\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0,\"Cn\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0,\"Cn\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0,\"Cn\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0,\"Cn\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":0,\"Cn\":0},{\"fID\":0,\"Tp\":0,\"Dy\":0,\"Dt\":\"00.00.00 \",\"Vl\":{\"type\":\"ERROR\"},\"Cn\":0}]}";
+
+}
+
+
+#include <QJsonDocument>
+#include <QJsonObject>
+void MainWindow::parseArray(QByteArray dataArr, int &start, int &len) {
+    JsonConvertor *conv = new JsonConvertor();
+    QString json = conv->dataToJson(dataArr);
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(json.toUtf8());
+    QJsonObject obj = jsonDoc.object();
+    start = obj["start"].toInt();
+    len = obj["length"].toInt();
+}
+
+QVector<int>* MainWindow::getDataByLoop(QByteArray query, int start, int len, QString field) {
+    QVector<int> *vct = new QVector<int>;
+    JsonConvertor *conv = new JsonConvertor();
+    for (int i = start; i < start + len; i++) {
+        QByteArray middle_answ = port->writeData(query + "[" + QByteArray::number(i) + "]");
+        QString json = conv->dataToJson(middle_answ);
+        QJsonObject obj = QJsonDocument::fromJson(json.toUtf8()).object();
+        vct->append(obj[field].toInt());
+    }
+    return vct;
+}
+
+//перебор пользователей
+QMap<int, QJsonObject>* MainWindow::getUsersOnDevice(QVector<int> users_ids) {
+    //лучше в структуру записывать <int (ID), JSON>
+    QMap<int, QJsonObject> *device_users = new QMap<int, QJsonObject>;
+    QByteArray answer = "";
+    QByteArray query = "get UserArr";
+    JsonConvertor *conv = new JsonConvertor();
+    for (int i=0; i<users_ids.length(); i++) {
+        QByteArray middle_answ = port->writeData(query + "[" + QByteArray::number(users_ids[i]) + "]");
+        QString json = conv->dataToJson(middle_answ);
+        QJsonParseError *err = new QJsonParseError();
+        QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8(), err);
+        if (doc.isEmpty()) {
+            qDebug() << "111";
+        }
+        QJsonObject obj = doc.object(); //не получается в json =(
+        device_users->insert(obj["UserID"].toInt(), obj);
+        answer += json;
+    }
+    ui->textEdit->setText(answer); //это не нужно
+    return device_users;
 }

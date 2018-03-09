@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>602</width>
-    <height>466</height>
+    <height>623</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -34,10 +34,10 @@
         <string>Пользователи</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="0" column="0" colspan="4">
-         <widget class="QTableView" name="tableUser">
-          <property name="showDropIndicator" stdset="0">
-           <bool>true</bool>
+        <item row="2" column="1">
+         <widget class="QPushButton" name="pbEditUser">
+          <property name="text">
+           <string>Редактировать</string>
           </property>
          </widget>
         </item>
@@ -54,10 +54,10 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
-         <widget class="QPushButton" name="pbEditUser">
+        <item row="2" column="3">
+         <widget class="QPushButton" name="pbUpdateUser">
           <property name="text">
-           <string>Редактировать</string>
+           <string>Обновить</string>
           </property>
          </widget>
         </item>
@@ -68,12 +68,8 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="3">
-         <widget class="QPushButton" name="pbUpdateUser">
-          <property name="text">
-           <string>Обновить</string>
-          </property>
-         </widget>
+        <item row="0" column="0" colspan="4">
+         <widget class="QTextEdit" name="textEdit"/>
         </item>
        </layout>
       </widget>
@@ -85,7 +81,7 @@
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget_2">
           <property name="currentIndex">
-           <number>0</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="tabFuel">
            <attribute name="title">
@@ -125,14 +121,85 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="tabRez">
+           <attribute name="title">
+            <string>Резервуары</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_7">
+            <item row="0" column="0" colspan="4">
+             <widget class="QTableView" name="tableTanks"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="pbAddTanks">
+              <property name="text">
+               <string>Добавить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="pbEditTanks">
+              <property name="text">
+               <string>Редактировать</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QPushButton" name="pbDeleteTanks">
+              <property name="text">
+               <string>Удалить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QPushButton" name="pbUpdateTanks">
+              <property name="text">
+               <string>Обновить</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
           <widget class="QWidget" name="tabCol">
            <attribute name="title">
             <string>Колонки</string>
            </attribute>
+           <layout class="QGridLayout" name="gridLayout_8">
+            <item row="0" column="0" colspan="4">
+             <widget class="QTableView" name="tablePoints"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QPushButton" name="pbAddPoints">
+              <property name="text">
+               <string>Добавить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="pbEditPoints">
+              <property name="text">
+               <string>Редактировать</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QPushButton" name="pbDeletePoints">
+              <property name="text">
+               <string>Удалить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
+             <widget class="QPushButton" name="pbUpdatePoints">
+              <property name="text">
+               <string>Обновить</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
-          <widget class="QWidget" name="tabRez">
+          <widget class="QWidget" name="tab">
            <attribute name="title">
-            <string>Резервуары</string>
+            <string>Объекты</string>
            </attribute>
           </widget>
          </widget>
@@ -256,15 +323,14 @@
     </property>
     <addaction name="actExit"/>
    </widget>
-   <widget class="QMenu" name="menuAction">
+   <widget class="QMenu" name="menu">
     <property name="title">
-     <string>Действия</string>
+     <string>Конфигурация</string>
     </property>
-    <addaction name="actSave"/>
-    <addaction name="actionf"/>
+    <addaction name="actConfigurate"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuAction"/>
+   <addaction name="menu"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -321,6 +387,11 @@
   <action name="actionf">
    <property name="text">
     <string>f</string>
+   </property>
+  </action>
+  <action name="actConfigurate">
+   <property name="text">
+    <string>Начать</string>
    </property>
   </action>
  </widget>

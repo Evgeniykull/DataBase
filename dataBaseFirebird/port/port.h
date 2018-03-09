@@ -30,6 +30,7 @@ public:
     ~Port();
     void sendData(QByteArray);
     QByteArray writeData(QByteArray text);
+    bool changeAccess(int);
 
 private slots:
     void onSettingsClick();

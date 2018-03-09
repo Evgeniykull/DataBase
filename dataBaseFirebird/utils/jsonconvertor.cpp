@@ -139,6 +139,14 @@ QString JsonConvertor::dataToJson(QByteArray data) {
         data_string.remove(n + 2, 1);
     }
 
+    //избавиться от -000000000000000 -> 0, если есть
+    while (n = data_string.indexOf("-000000000000000")) {
+        if (n == -1) {
+            break;
+        }
+        data_string.replace(n, 16, "0");
+    }
+
     qDebug() << data_string;
     return data_string;
 }

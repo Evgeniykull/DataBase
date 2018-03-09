@@ -92,6 +92,49 @@ void Port::onChangeAccessClick() {
     closePort();
 }
 
+bool Port::changeAccess(int level) {
+    openPort();
+    if (!port->isOpen()) {
+        QMessageBox::information(0, QObject::tr("Невозможно записать на устройство"), QObject::tr("Порт закрыт"));
+        return false;
+    }
+
+    QByteArray req_acc_level = "ReqAccLevel:" + QByteArray::number(level);
+    QByteArray alpassword = "ALPassword:";
+
+    if (level > 0) {
+        QString password = "";
+        if (level == 1) {
+            password = "12345";
+        } else if(level == 2) {
+            password = "27182";
+        }
+
+        alpassword += password.toUtf8();
+    }
+
+    QByteArray req = "run AccessCmd:{\n" + req_acc_level + "\n";
+    if (level) {
+        req += alpassword;
+    }
+    req += "}";
+
+    QByteArray req_data = writeData(req);
+    req_data = writeData("get AccessCmd");
+
+    int pos = req_data.indexOf("ALMessage:");
+    QString answ_message = QString(req_data).mid(pos + 11);
+    pos = answ_message.indexOf('"');
+    answ_message = answ_message.mid(0, pos);
+
+    if (answ_message != "Ok") {
+        QMessageBox::information(0, QObject::tr("Изменение режима доступа"), QString(req_data));
+    }
+
+    closePort();
+    return answ_message == "Ok";
+}
+
 void Port::onAccessUpdateClick() {
     openPort();
     if (!port->isOpen()) {
@@ -138,6 +181,7 @@ void Port::closePort()
     if (port->isOpen()) {
         port->close();
     }
+    transfer_data = false;
 }
 
 void Port::sendData(QByteArray data) {
@@ -220,12 +264,12 @@ QByteArray Port::writeData(QByteArray text)
 // до освобождения, либо выыдавать сообщение. Данную ветвь можно оставить только как резервную,
 // чтобы в случае оплошности не было диких глюков. Но тогда НУЖНО установить errcode - чтобы было понятно что случилось
     //TODO вернуть
-    /*if (transfer_data) {
+    if (transfer_data) {
         errcode=0x89;  // Коды ошибок нужно делать разные, чтобы было понятно что к чему (хотя бы нам, а лучше и пользователю)
         return "";
     } else {
         transfer_data = true;
-    }*/
+    }
 // Перекодировали в CP1251 - хорошо
     QTextCodec *codec1 = QTextCodec::codecForName( "CP1251" );
     text = codec1->fromUnicode(QString(text));

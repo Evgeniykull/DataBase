@@ -5,7 +5,7 @@
 #include <QTableView>
 #include <QtSql/QSqlDatabase>
 #include <QSqlRelationalTableModel>
-#include "adduserdialog.h"
+#include "dialogs/adduserdialog.h"
 
 class ModelUser : public QObject
 {

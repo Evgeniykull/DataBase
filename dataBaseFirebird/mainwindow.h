@@ -3,9 +3,9 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QVector>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlRelationalTableModel>
-#include <QtSerialPort/QSerialPort>
 #include <tree/treemodel.h>
 #include "port/port.h"
 
@@ -43,20 +43,28 @@ private slots:
     void deleteUsers();
     void onEditUsersClick();
 
-    //все add в одну функцию, передавать только модель как аргумент
     void updateFuels();
     void addFuels();
     void deleteFuels();
-    void saveFuels();
+    void onEditFuelsClick();
 
-    //new
-    void openPort();
-    void closePort();
-    void changePort(QString name);
+    void updateTanks();
+    void addTanks();
+    void deleteTanks();
+    void onEditTanksClick();
+
+    void updatePoints();
+    void addPoints();
+    void deletePoints();
+    void onEditPointsClick();
+
+    void getFuelIndex();
 
     //my
     void getUserIndex();
-    void endTransmitData(QByteArray);
+    void parseArray(QByteArray, int&, int&);
+    QVector<int>* getDataByLoop(QByteArray, int, int, QString);
+    QMap<int, QJsonObject>* getUsersOnDevice(QVector<int> users_ids);
 
 private:
     Ui::MainWindow *ui;
@@ -66,21 +74,16 @@ private:
     QSqlDatabase db;
     QSqlRelationalTableModel *model_users;
     QSqlRelationalTableModel *model_fuels;
+    QSqlRelationalTableModel *model_tanks;
+    QSqlRelationalTableModel *model_points;
     TreeModel *model;
 
     void renderToolbar();
 
     //new
-    QSerialPort *port;
     QStringList port_names;
-    Port *port_;
-
-
-    int byteOnPackage;
-    unsigned char buff[255];
-    unsigned char errnum;  // Количество ошибочных обменов
-    unsigned char errcode; // Код ошибки обмена
-    unsigned char answc;   // Код ответа
+    Port *port;
+    int selected_user_row = -1;
 };
 
 #endif // MAINWINDOW_H

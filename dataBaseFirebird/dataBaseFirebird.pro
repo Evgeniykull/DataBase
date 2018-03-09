@@ -26,30 +26,45 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    adduserdialog.cpp \
-    modeluser.cpp \
     tree/treeitem.cpp \
     tree/treemodel.cpp \
     utils/jsonconvertor.cpp \
     utils/treadworker.cpp \
     utils/catalogswrither.cpp \
     port/portsettings.cpp \
-    port/port.cpp
+    port/port.cpp \
+    dialogs/addfuelsdialog.cpp \
+    dialogs/adduserdialog.cpp \
+    models/modelfuels.cpp \
+    models/modeluser.cpp \
+    models/modeltanks.cpp \
+    dialogs/addtanksdialog.cpp \
+    models/modelpoints.cpp \
+    dialogs/addpointsdialog.cpp
 
 HEADERS += \
         mainwindow.h \
-    adduserdialog.h \
-    modeluser.h \
     tree/treeitem.h \
     tree/treemodel.h \
     utils/jsonconvertor.h \
     utils/treadworker.h \
     utils/catalogswrither.h \
     port/portsettings.h \
-    port/port.h
+    port/port.h \
+    dialogs/addfuelsdialog.h \
+    dialogs/adduserdialog.h \
+    models/modelfuels.h \
+    models/modeluser.h \
+    models/modeltanks.h \
+    dialogs/addtanksdialog.h \
+    models/modelpoints.h \
+    dialogs/addpointsdialog.h
 
 FORMS += \
         mainwindow.ui \
-    adduserdialog.ui \
     port/portsettings.ui \
-    port/port.ui
+    port/port.ui \
+    dialogs/addfuelsdialog.ui \
+    dialogs/adduserdialog.ui \
+    dialogs/addtanksdialog.ui \
+    dialogs/addpointsdialog.ui

@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="tabsClosable">
        <bool>false</bool>
@@ -34,18 +34,21 @@
         <string>Пользователи</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
-        <item row="2" column="1">
-         <widget class="QPushButton" name="pbEditUser">
-          <property name="text">
-           <string>Редактировать</string>
+        <item row="0" column="0" rowspan="2" colspan="2">
+         <widget class="QTreeView" name="treeView">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>16777215</height>
+           </size>
           </property>
          </widget>
         </item>
-        <item row="1" column="0" colspan="2">
-         <widget class="QTreeView" name="treeView"/>
-        </item>
-        <item row="1" column="2" colspan="2">
+        <item row="0" column="2" colspan="3">
          <widget class="QTextEdit" name="teUserInfo"/>
+        </item>
+        <item row="1" column="2" rowspan="2" colspan="3">
+         <widget class="QTableView" name="tableLimits"/>
         </item>
         <item row="2" column="0">
          <widget class="QPushButton" name="pbAddUser">
@@ -54,22 +57,47 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="3">
-         <widget class="QPushButton" name="pbUpdateUser">
+        <item row="2" column="1">
+         <widget class="QPushButton" name="pbEditUser">
           <property name="text">
-           <string>Обновить</string>
+           <string>Редактировать</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="2">
+        <item row="3" column="0">
          <widget class="QPushButton" name="pbDeleteUser">
           <property name="text">
            <string>Удалить</string>
           </property>
          </widget>
         </item>
-        <item row="0" column="0" colspan="4">
-         <widget class="QTextEdit" name="textEdit"/>
+        <item row="3" column="1">
+         <widget class="QPushButton" name="pbGetUserCard">
+          <property name="text">
+           <string>Выпустить карту</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="2">
+         <widget class="QPushButton" name="pbAddLimits">
+          <property name="text">
+           <string>Добавить</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="3">
+         <widget class="QPushButton" name="pbEditLimits">
+          <property name="text">
+           <string>Редактировать</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="4">
+         <widget class="QPushButton" name="pbDeleteLimits">
+          <property name="text">
+           <string>Удалить</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -81,17 +109,27 @@
         <item row="0" column="0">
          <widget class="QTabWidget" name="tabWidget_2">
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tabFuel">
            <attribute name="title">
             <string>Топливо</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0" colspan="3">
+             <widget class="QTableView" name="tableFuel"/>
+            </item>
             <item row="1" column="0">
              <widget class="QPushButton" name="pbAddFuel">
               <property name="text">
                <string>Добавить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QPushButton" name="pbEditFuel">
+              <property name="text">
+               <string>Редактировать</string>
               </property>
              </widget>
             </item>
@@ -102,23 +140,6 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="3">
-             <widget class="QPushButton" name="pbUpdateFuel">
-              <property name="text">
-               <string>Обновить</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0" colspan="4">
-             <widget class="QTableView" name="tableFuel"/>
-            </item>
-            <item row="1" column="1">
-             <widget class="QPushButton" name="pbEditFuel">
-              <property name="text">
-               <string>Редактировать</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="tabRez">
@@ -126,7 +147,7 @@
             <string>Резервуары</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_7">
-            <item row="0" column="0" colspan="4">
+            <item row="0" column="0" colspan="3">
              <widget class="QTableView" name="tableTanks"/>
             </item>
             <item row="1" column="0">
@@ -150,13 +171,6 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="3">
-             <widget class="QPushButton" name="pbUpdateTanks">
-              <property name="text">
-               <string>Обновить</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </widget>
           <widget class="QWidget" name="tabCol">
@@ -164,34 +178,44 @@
             <string>Колонки</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_8">
-            <item row="0" column="0" colspan="4">
+            <item row="1" column="0" colspan="3">
              <widget class="QTableView" name="tablePoints"/>
             </item>
-            <item row="1" column="0">
+            <item row="2" column="0">
              <widget class="QPushButton" name="pbAddPoints">
               <property name="text">
                <string>Добавить</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="2" column="1">
              <widget class="QPushButton" name="pbEditPoints">
               <property name="text">
                <string>Редактировать</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="2">
+            <item row="2" column="2">
              <widget class="QPushButton" name="pbDeletePoints">
               <property name="text">
                <string>Удалить</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="3">
-             <widget class="QPushButton" name="pbUpdatePoints">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_2">
               <property name="text">
-               <string>Обновить</string>
+               <string>Выберите номер колонки</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="cbTankNum"/>
+            </item>
+            <item row="0" column="2">
+             <widget class="QPushButton" name="pbChangePointsNum">
+              <property name="text">
+               <string>Поменять</string>
               </property>
              </widget>
             </item>
@@ -226,6 +250,13 @@
                </property>
               </widget>
              </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="lblPasord">
+               <property name="text">
+                <string>Введите пароль:</string>
+               </property>
+              </widget>
+             </item>
              <item row="0" column="0" colspan="2">
               <layout class="QHBoxLayout" name="horizontalLayout">
                <item>
@@ -240,13 +271,6 @@
                </item>
               </layout>
              </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="lblPasord">
-               <property name="text">
-                <string>Введите пароль:</string>
-               </property>
-              </widget>
-             </item>
              <item row="4" column="0" colspan="2">
               <widget class="QLineEdit" name="lePassword">
                <property name="echoMode">
@@ -257,27 +281,7 @@
                </property>
               </widget>
              </item>
-             <item row="5" column="0">
-              <widget class="QPushButton" name="pbConnect">
-               <property name="text">
-                <string>Подключиться</string>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>443</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item row="6" column="1">
+             <item row="7" column="1">
               <spacer name="verticalSpacer">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -294,6 +298,36 @@
               <widget class="QLineEdit" name="leUserName">
                <property name="clearButtonEnabled">
                 <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="0">
+              <widget class="QPushButton" name="pbConnect">
+               <property name="text">
+                <string>Подключиться</string>
+               </property>
+              </widget>
+             </item>
+             <item row="6" column="1">
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>443</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item row="5" column="1">
+              <widget class="QLineEdit" name="leAZSNum"/>
+             </item>
+             <item row="5" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>№АЗС</string>
                </property>
               </widget>
              </item>
@@ -329,8 +363,15 @@
     </property>
     <addaction name="actConfigurate"/>
    </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Обновить</string>
+    </property>
+    <addaction name="actUpdUsers"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menu"/>
+   <addaction name="menu_2"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -392,6 +433,11 @@
   <action name="actConfigurate">
    <property name="text">
     <string>Начать</string>
+   </property>
+  </action>
+  <action name="actUpdUsers">
+   <property name="text">
+    <string>Пользователи</string>
    </property>
   </action>
  </widget>

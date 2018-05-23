@@ -18,8 +18,8 @@ public:
     ~addUserDialog();
 
 signals:
-    void onOkClick(int, int, QString, QString, int);
-    void onOkClick(int, int, int, QString, QString, int);
+    void onOkClick(int, QString, QString, int, QString);
+    void onOkClick(int, int, QString, QString, int, QString, bool);
 
 private slots:
     void onButtonOkClick();
@@ -28,6 +28,7 @@ private:
     Ui::addUserDialog *ui;
     int userId = -1;
     QSqlDatabase dataBase;
+    QString sldate1 = "";
 };
 
 #endif // ADDUSERDIALOG_H

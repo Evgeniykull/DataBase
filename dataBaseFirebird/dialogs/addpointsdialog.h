@@ -18,8 +18,8 @@ public:
     ~AddPointsDialog();
 
 signals:
+    void onOkClick(int, int, int, int);
     void onOkClick(int, int, int, int, int);
-    void onOkClick(int, int, int, int, int, int);
 
 private slots:
     void onButtonOkClick();

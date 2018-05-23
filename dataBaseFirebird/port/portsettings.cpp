@@ -14,7 +14,24 @@ PortSettings::PortSettings(QWidget *parent) :
     connect(ui->cbBaudRate, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onOkClick()));
     connect(ui->buttonBox, SIGNAL(rejected()), SLOT(onCacnelClick()));
+    port_settings = new QSettings("settings.conf", QSettings::IniFormat);
     getPortSettingsFromFile();
+}
+
+PortSettings::PortSettings(int addr, QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::PortSettings)
+{
+    ui->setupUi(this);
+    addValueToSettings();
+    getPortsInfo();
+    ui->leAddres->setValidator(new QIntValidator(0, 100000, this));
+    connect(ui->cbBaudRate, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
+    connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onOkClick()));
+    connect(ui->buttonBox, SIGNAL(rejected()), SLOT(onCacnelClick()));
+    port_settings = new QSettings("settings.conf", QSettings::IniFormat);
+    getPortSettingsFromFile();
+    ui->leAddres->setText(QString::number(addr));
 }
 
 PortSettings::~PortSettings()
@@ -134,6 +151,18 @@ void PortSettings::onOkClick() {
     bool ok;
     int onPackage = ui->leAddres->text().toInt(&ok);
     SettingsPort.byteOnPackage = (ok && onPackage < 256 && onPackage > 0) ? onPackage : 100;
+
+    port_settings->beginGroup("PortSettings");
+    port_settings->setValue("comPort", SettingsPort.name);
+    port_settings->setValue("baudRate", ui->cbBaudRate->itemText(ui->cbBaudRate->currentIndex()));
+    port_settings->setValue("dataBits", ui->cbDataBist->itemText(ui->cbDataBist->currentIndex()));
+    port_settings->setValue("pairity", ui->cbPairity->itemText(ui->cbPairity->currentIndex()));
+    port_settings->setValue("stopBits", ui->cbStopBits->itemText(ui->cbStopBits->currentIndex()));
+    port_settings->setValue("flowControl", ui->cbFlowControl->itemText(ui->cbFlowControl->currentIndex()));
+    port_settings->setValue("address", ui->leAddres->text());
+    port_settings->setValue("byteInPacket", ui->leByteInPacket->text());
+    port_settings->endGroup();
+    port_settings->sync();
 
     QFile file("settings.ini");
     file.open(QIODevice::ReadWrite);

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QTableView>
+#include <QMessageBox>
 #include <QtSql/QSqlDatabase>
 #include <QSqlRelationalTableModel>
 #include "dialogs/addfuelsdialog.h"
@@ -29,6 +30,7 @@ private slots:
 
 private:
     QSqlDatabase data_base;
+    QMessageBox *mBx;
 };
 
 #endif

@@ -23,6 +23,22 @@ Port::Port(QWidget *parent) :
     connect(ui->pbUpdateAccess, SIGNAL(clicked(bool)), SLOT(onAccessUpdateClick()));
 }
 
+Port::Port(int port_addr, QWidget *parent) :
+    QGroupBox(parent),
+    ui(new Ui::Port)
+{
+    ui->setupUi(this);
+    port = new QSerialPort(this);
+    port_settings = new PortSettings(port_addr);
+    rewriteSettings(port_addr); //начальная установка настроек
+    //при изменение настроек срабатывает сигнал settingsIsChanged
+    connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(rewriteSettings()));
+
+    connect(ui->pbSettings, SIGNAL(clicked(bool)), SLOT(onSettingsClick()));
+    connect(ui->pbSetAccess, SIGNAL(clicked(bool)), SLOT(onChangeAccessClick()));
+    connect(ui->pbUpdateAccess, SIGNAL(clicked(bool)), SLOT(onAccessUpdateClick()));
+}
+
 Port::~Port()
 {
     delete ui;
@@ -32,7 +48,7 @@ void Port::onSettingsClick() {
     port_settings->exec();
 }
 
-void Port::rewriteSettings() {
+void Port::rewriteSettings(int addr) {
     if (port_settings->isChanged) {
         sett.name = port_settings->SettingsPort.name;
         sett.baudRate = port_settings->SettingsPort.baudRate;
@@ -40,9 +56,14 @@ void Port::rewriteSettings() {
         sett.parity = port_settings->SettingsPort.parity;
         sett.stopBits = port_settings->SettingsPort.stopBits;
         sett.flowControl = port_settings->SettingsPort.flowControl;
-        sett.addres = port_settings->SettingsPort.addres;
         sett.byteOnPackage = port_settings->SettingsPort.byteOnPackage;
         ui->lblPortName->setText(sett.name);
+
+        if (addr > -1) {
+            sett.addres = addr;
+        } else {
+            sett.addres = port_settings->SettingsPort.addres;
+        }
     }
     openPort();
     closePort();
@@ -255,7 +276,6 @@ void Port::putPortData(QByteArray tr_data) {
   port->write(tr_data);
 }
 
-//пзц
 QByteArray Port::writeData(QByteArray text)
 {
     openPort();

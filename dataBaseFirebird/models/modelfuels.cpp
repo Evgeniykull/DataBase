@@ -9,6 +9,7 @@ ModelFuels::ModelFuels(QObject *parent) : QObject(parent)
 
 ModelFuels::ModelFuels(QSqlDatabase db, QObject *parent) : QObject(parent) {
     data_base = db;
+    mBx = new QMessageBox();
 }
 
 void ModelFuels::addFuels() {
@@ -24,8 +25,9 @@ void ModelFuels::deleteFuels(int user_id) {
 
     query->exec(statament);
     if (query->lastError().isValid()) {
-        //QMessage
-        qDebug() << "RemoveRow:" << query->lastError();
+        mBx->setWindowTitle("Удаление топлива");
+        mBx->setText(query->lastError().databaseText());
+        mBx->show();
     }
     emit needUpdate();
 }
@@ -38,16 +40,16 @@ void ModelFuels::editFuels(int user_id) {
 
 void ModelFuels::finishAddFuels(QString name, QString viewName, int price) {
     QSqlQuery* query = new QSqlQuery(data_base);
-    QString statament = "INSERT INTO fuels (name, viewname, price) VALUES (";
-    statament.append("'" + name + "', ");
-    statament.append("'" + viewName + "', ");
-    statament.append(QString::number(price));
-    statament.append(")");
+    QString statament = QString("INSERT INTO fuels (name, viewname, price) VALUES ('%1', '%2', %3)")
+            .arg(name)
+            .arg(viewName)
+            .arg(QString::number(price));
 
     query->exec(statament);
     if (query->lastError().isValid()) {
-        //добавить QMessage
-        qDebug() << "AddUser:" << query->lastError();
+        mBx->setWindowTitle("Добавление топлива");
+        mBx->setText(query->lastError().databaseText());
+        mBx->show();
     }
     emit needUpdate();
 }
@@ -62,8 +64,9 @@ void ModelFuels::finishEditFuels(int fuelId, QString name, QString viewName, int
 
     query->exec(statament);
     if (query->lastError().isValid()) {
-        //QMessage
-        qDebug() << "Error:" << query->lastError();
+        mBx->setWindowTitle("Редактирование топлива");
+        mBx->setText(query->lastError().databaseText());
+        mBx->show();
     }
     emit needUpdate();
 }

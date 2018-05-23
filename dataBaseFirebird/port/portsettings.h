@@ -4,6 +4,7 @@
 #include <QDialog>
 #include <QtSerialPort/QSerialPort>
 #include <QSerialPortInfo>
+#include <QSettings>
 
 namespace Ui {
 class PortSettings;
@@ -26,6 +27,7 @@ struct Settings {
 
 public:
     explicit PortSettings(QWidget *parent = 0);
+    explicit PortSettings(int addr, QWidget *parent = 0);
     ~PortSettings();
     Settings SettingsPort;
     bool isChanged;
@@ -44,6 +46,7 @@ private:
     void addValueToSettings();
     void getPortSettingsFromFile();
     void getPortsInfo();
+    QSettings *port_settings;
 };
 
 #endif // PORTSETTINGS_H

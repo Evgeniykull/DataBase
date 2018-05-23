@@ -12,6 +12,8 @@ AddTanksDialog::AddTanksDialog(QWidget *parent) :
     ui->setupUi(this);
     connect(ui->buttonBox, SIGNAL(rejected()), SLOT(close()));
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
+    getFuelMap();
+    ui->cbFuels->setCurrentIndex(0);
 }
 
 AddTanksDialog::AddTanksDialog(int tank_id, QSqlDatabase db, QWidget *parent) :
@@ -24,18 +26,16 @@ AddTanksDialog::AddTanksDialog(int tank_id, QSqlDatabase db, QWidget *parent) :
     ui->setupUi(this);
     connect(ui->buttonBox, SIGNAL(rejected()), SLOT(close()));
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
+    getFuelMap();
 
     QSqlQuery* query = new QSqlQuery(db);
-    QString statament = "SELECT * FROM tanks WHERE id=";
-    statament.append(QString::number(tank_id));
+    QString statament = QString("SELECT * FROM tanks WHERE id=%1").arg(QString::number(tank_id));
     query->exec(statament);
     query->next();
 
     QSqlRecord rec = query->record();
-
-    ui->leObject->setText(rec.value(1).toString());
-    ui->leTanks->setText(rec.value(2).toString());
-    ui->leAdress->setText(rec.value(3).toString());
+    ui->cbFuels->setCurrentText(fuel_map->value(rec.value(1).toInt()));
+    ui->leAdress->setText(rec.value(2).toString());
     ui->leComment->setText(rec.value(4).toString());
 }
 
@@ -45,27 +45,30 @@ AddTanksDialog::~AddTanksDialog()
 }
 
 void AddTanksDialog::onButtonOkClick() {
-    int object_id = ui->leObject->text().toInt();
-    int tank_id = ui->leTanks->text().toInt();
+    QString fuel_name = ui->cbFuels->currentText();
+    int fuel_id = fuel_map->key(fuel_name);
     int addr = ui->leAdress->text().toInt();
     QString comment = ui->leComment->text();
 
     if (tankId > -1) {
-        emit onOkClick(tankId, object_id, tank_id, addr, comment);
+        emit onOkClick(tankId, fuel_id, addr, comment);
     } else {
-        emit onOkClick(object_id, tank_id, addr, comment);
+        emit onOkClick(fuel_id, addr, comment);
     }
     this->close();
+}
 
-    /*int price = ui->lePrice->text().toInt();
-    QString name = ui->leName->text();
-    QString viewName = ui->leViewName->text();
+void AddTanksDialog::getFuelMap() {
+    fuel_map = new QMap<int, QString>;
+    QSqlQuery* query = new QSqlQuery(dataBase);
+    QString statament = "SELECT fueldid, name from FUELS";
+    query->exec(statament);
 
-    if (fuelsId > -1) {
-        emit onOkClick(fuelsId, name, viewName, price);
-    } else {
-        emit onOkClick(name, viewName, price);
+    int i = 0;
+    while(query->next()) {
+        fuel_map->insert(query->record().value("fueldid").toInt(),
+                         query->record().value("name").toString());
+        ui->cbFuels->insertItem(i, query->record().value("name").toString());
+        i += 1;
     }
-    this->close();
-    */
 }

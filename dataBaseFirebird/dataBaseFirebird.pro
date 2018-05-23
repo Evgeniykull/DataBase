@@ -40,7 +40,10 @@ SOURCES += \
     models/modeltanks.cpp \
     dialogs/addtanksdialog.cpp \
     models/modelpoints.cpp \
-    dialogs/addpointsdialog.cpp
+    dialogs/addpointsdialog.cpp \
+    dialogs/getcarddialog.cpp \
+    models/modellimit.cpp \
+    dialogs/addlimitsdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -58,7 +61,10 @@ HEADERS += \
     models/modeltanks.h \
     dialogs/addtanksdialog.h \
     models/modelpoints.h \
-    dialogs/addpointsdialog.h
+    dialogs/addpointsdialog.h \
+    dialogs/getcarddialog.h \
+    models/modellimit.h \
+    dialogs/addlimitsdialog.h
 
 FORMS += \
         mainwindow.ui \
@@ -67,4 +73,6 @@ FORMS += \
     dialogs/addfuelsdialog.ui \
     dialogs/adduserdialog.ui \
     dialogs/addtanksdialog.ui \
-    dialogs/addpointsdialog.ui
+    dialogs/addpointsdialog.ui \
+    dialogs/getcarddialog.ui \
+    dialogs/addlimitsdialog.ui

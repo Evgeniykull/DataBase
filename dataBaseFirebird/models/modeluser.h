@@ -5,6 +5,7 @@
 #include <QTableView>
 #include <QtSql/QSqlDatabase>
 #include <QSqlRelationalTableModel>
+#include <QMessageBox>
 #include "dialogs/adduserdialog.h"
 
 class ModelUser : public QObject
@@ -23,11 +24,13 @@ public slots:
     void editUsers(int);
 
 private slots:
-    void finishAddUser(int, int, QString, QString, int);
-    void finishEditUser(int, int, int, QString, QString, int);
+    void finishAddUser(int, QString, QString, int, QString);
+    void finishEditUser(int, int, QString, QString, int, QString, bool);
 
 private:
     QSqlDatabase data_base;
+    QMessageBox *mBx;
+    QString SLDate;
 };
 
 #endif // MODELUSER_H

@@ -35,7 +35,6 @@ AddPointsDialog::AddPointsDialog(int point_id, QSqlDatabase db, QWidget *parent)
 
     qDebug() << rec;
 
-    ui->leObjectId->setText(rec.value(1).toString());
     ui->leDispsId->setText(rec.value(2).toString());
     ui->leAddress->setText(rec.value(3).toString());
     ui->leTankId->setText(rec.value(4).toString());
@@ -48,16 +47,15 @@ AddPointsDialog::~AddPointsDialog()
 }
 
 void AddPointsDialog::onButtonOkClick() {
-    int objectId = ui->leObjectId->text().toInt();
     int dispdId = ui->leDispsId->text().toInt();
     int sendAddr = ui->leAddress->text().toInt();
     int tankId = ui->leTankId->text().toInt();
     int workFlag = ui->leWorkFlag->text().toInt();
 
     if (pointId > -1) {
-        emit onOkClick(pointId, objectId, dispdId, sendAddr, tankId, workFlag);
+        emit onOkClick(pointId, dispdId, sendAddr, tankId, workFlag);
     } else {
-        emit onOkClick(objectId, dispdId, sendAddr, tankId, workFlag);
+        emit onOkClick(dispdId, sendAddr, tankId, workFlag);
     }
 
     this->close();

@@ -62,8 +62,12 @@ void TreeItem::Clicked(QTextEdit *tE) {
             "ID Родителя: " + item_record.value("parentid").toString() + "\n" +
             "Короткое имя: " + item_record.value("shortname").toString() + "\n" +
             "Имя пользователя: " + item_record.value("viewname").toString() + "\n" +
-            "ID Карты: " + item_record.value("cardid").toString() + "\n";
+            "ID Карты: " + item_record.value("cardid").toString() + "\n" +
+            "Флаги: " + item_record.value("flags").toString() + "\n" +
+            "Дата введения: " + item_record.value("sldate").toString() + "\n" +
+            "Необходимость обновить: " + item_record.value("refslim").toString() + "\n";
     tE->setText(user_info);
+    tE->textChanged();
 }
 
 int TreeItem::getElemIndex() {

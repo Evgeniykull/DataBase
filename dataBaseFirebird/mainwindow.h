@@ -3,10 +3,14 @@
 
 #include <QMainWindow>
 #include <QLabel>
+#include <QActionGroup>
 #include <QVector>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlRelationalTableModel>
 #include <tree/treemodel.h>
+#include <QSettings>
+#include <QCloseEvent>
+#include <QMessageBox>
 #include "port/port.h"
 
 namespace Ui {
@@ -57,33 +61,64 @@ private slots:
     void addPoints();
     void deletePoints();
     void onEditPointsClick();
+    void changeCurrentPointNum();
 
-    void getFuelIndex();
+    void updateLimits();
+    void addLimits();
+    void deleteLimits();
+    void editLimits();
+
+    void startConfigurate();
+    void getUserCard();
+    void changeUserCard();
+    void updateUserOnDevice(int);
+
+    void currentTabChanged(int);
+    void currentTab2Changed(int);
+
+    void writeSettings();
+    void readSettings();
+    void closeEvent(QCloseEvent *event);
+
 
     //my
     void getUserIndex();
     void parseArray(QByteArray, int&, int&);
     QVector<int>* getDataByLoop(QByteArray, int, int, QString);
     QMap<int, QJsonObject>* getUsersOnDevice(QVector<int> users_ids);
+    void timerEnd();
 
 private:
     Ui::MainWindow *ui;
     QLabel *status_bar;
     QLabel *port_status;
+    QActionGroup *menu_bar;
 
     QSqlDatabase db;
     QSqlRelationalTableModel *model_users;
     QSqlRelationalTableModel *model_fuels;
     QSqlRelationalTableModel *model_tanks;
     QSqlRelationalTableModel *model_points;
+    QSqlRelationalTableModel *model_limits;
     TreeModel *model;
 
     void renderToolbar();
+    QString getCartMemoryData(int);
+    QString getValueFromState(QString, QString);
 
     //new
     QStringList port_names;
     Port *port;
+    Port *card_reader;
     int selected_user_row = -1;
+    int selected_user_id = -1;
+
+    int timer_end = 0;
+    int last_select_tab2 = 0;
+    QSettings *settings;
+    QString azsNum = 0;
+    QString pointNum = "";
+    QMessageBox *mbx;
 };
 
 #endif // MAINWINDOW_H

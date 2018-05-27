@@ -34,9 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     settings = new QSettings("settings.conf", QSettings::IniFormat);
     readSettings();
-    if (!ui->lePath->text().isEmpty()) {
-        onConnectClick();
-    }
+    onConnectClick();
 
     connect(ui->pbConnect, SIGNAL(clicked(bool)), SLOT(onConnectClick()));
     connect(ui->teUserInfo, &QTextEdit::textChanged, this, &MainWindow::updateLimits);
@@ -170,6 +168,12 @@ void MainWindow::closeEvent(QCloseEvent *event) {
    }
 }
 
+void MainWindow::accessCheck() {
+    if (db_status == "Подключено") {
+
+    }
+}
+
 void MainWindow::onViewClick() {
     QString path_to_base = QFileDialog::getOpenFileName(this, "Выбор БД", QDir::currentPath());
     ui->lePath->setText(path_to_base);
@@ -189,16 +193,30 @@ void MainWindow::onActConnectClick() {
 
 void MainWindow::onConnectClick() {
     db = QSqlDatabase::addDatabase("QIBASE");
-    //db.setDatabaseName("F:/DataBase/TESTBASE.FDB"); //ui->lePath->text()
-    db.setDatabaseName(ui->lePath->text());
+    QString path = ui->lePath->text().isEmpty() ? "TESTBASE.FDB" : ui->lePath->text();
+    db.setDatabaseName(path);
     db.setUserName(ui->leUserName->text());
     db.setPassword(ui->lePassword->text());
     //db.setUserName("SYSDBA");
     //db.setPassword("123");
     bool is_open = db.open();
 
-    QString db_status = is_open ? "Подключено" : db.lastError().text();
-    status_bar->setText(db_status);
+    db_status = is_open ? "Подключено" : db.lastError().text();
+
+    if (is_open) {
+        status_bar->setText(db_status);
+        ui->actUser->setDisabled(false);
+        ui->actDirectory->setDisabled(false);
+    } else {
+        ui->actUser->setDisabled(true);
+        ui->actDirectory->setDisabled(true);
+
+        ui->actUser->setChecked(false);
+        ui->actDirectory->setChecked(false);
+        ui->actConnect->setChecked(true);
+
+        ui->tabWidget->setCurrentIndex(2);
+    }
 }
 
 void setTableFormat(QTableView *tab)
@@ -244,7 +262,6 @@ void MainWindow::onEditUsersClick() {
     user_model->editUsers(userid);
 }
 
-//удаление происходит сразу
 //TODO добавить подтверждение
 void MainWindow::deleteUsers()
 {
@@ -263,7 +280,6 @@ void MainWindow::updateFuels() {
     model_fuels->setTable("fuels");
     model_fuels->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model_fuels->select();
-    //model_fuels->setEditTriggers(QAbstractItemView::NoEditTriggers);
     ui->tableFuel->setModel(model_fuels);
     setTableFormat(ui->tableFuel);
 }
@@ -276,16 +292,13 @@ void MainWindow::addFuels() {
 
 void MainWindow::deleteFuels() {
     QModelIndex iid = ui->tableFuel->currentIndex();
-    //работает, но!
-    //r было приватным
-    int idx = iid.r;
+    int idx = iid.row();
     if (idx < 0) {
         return;
     }
 
     ModelFuels *fuel_model = new ModelFuels(db);
     connect(fuel_model, SIGNAL(needUpdate()), SLOT(updateFuels()));
-    //а если рекорд достать через QModelIndex?
     int fuelid = model_fuels->record(idx).value("fueldid").toInt();
     fuel_model->deleteFuels(fuelid);
 }
@@ -323,9 +336,7 @@ void MainWindow::addTanks() {
 
 void MainWindow::deleteTanks() {
     QModelIndex iid = ui->tableTanks->currentIndex();
-    //работает, но!
-    //r было приватным
-    int idx = iid.r;
+    int idx = iid.row();
     if (idx < 0) {
         return;
     }
@@ -386,7 +397,7 @@ void MainWindow::addPoints() {
 
 void MainWindow::deletePoints() {
     QModelIndex iid = ui->tablePoints->currentIndex();
-    int idx = iid.r;
+    int idx = iid.row();
     if (idx < 0) {
         return;
     }
@@ -398,7 +409,7 @@ void MainWindow::deletePoints() {
 }
 
 void MainWindow::onEditPointsClick() {
-    int idx = ui->tablePoints->currentIndex().r;
+    int idx = ui->tablePoints->currentIndex().row();
     if (idx < 0) {
         return;
     }
@@ -426,7 +437,6 @@ void MainWindow::updateLimits() {
 
     model_limits = new QSqlRelationalTableModel(0, db);
     model_limits->setTable("limits");
-    //model_limits->setRelation(1, QSqlRelation("USERS", "USERID", "VIEWNAME"));
     model_limits->setRelation(2, QSqlRelation("FUELS", "FUELDID", "NAME"));
     model_limits->setEditStrategy(QSqlTableModel::OnManualSubmit);
     QString filter = QString("userid=%1").arg(user_id);
@@ -452,7 +462,7 @@ void MainWindow::addLimits() {
 
 void MainWindow::deleteLimits() {
     QModelIndex iid = ui->tableLimits->currentIndex();
-    int idx = iid.r;
+    int idx = iid.row();
     if (idx < 0) {
         return;
     }
@@ -471,7 +481,7 @@ void MainWindow::deleteLimits() {
 }
 
 void MainWindow::editLimits() {
-    int idx = ui->tableLimits->currentIndex().r;
+    int idx = ui->tableLimits->currentIndex().row();
     if (idx < 0) {
         return;
     }

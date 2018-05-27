@@ -31,6 +31,7 @@ public:
     ~Port();
     void sendData(QByteArray);
     QByteArray writeData(QByteArray text);
+    QByteArray write(QByteArray text);
     bool changeAccess(int);
 
 private slots:

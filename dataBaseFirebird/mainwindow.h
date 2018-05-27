@@ -80,6 +80,7 @@ private slots:
     void readSettings();
     void closeEvent(QCloseEvent *event);
 
+    void accessCheck();
 
     //my
     void getUserIndex();
@@ -106,7 +107,8 @@ private:
     QString getCartMemoryData(int);
     QString getValueFromState(QString, QString);
 
-    //new
+    QString db_status;
+
     QStringList port_names;
     Port *port;
     Port *card_reader;

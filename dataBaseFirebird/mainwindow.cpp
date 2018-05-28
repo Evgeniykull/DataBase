@@ -44,6 +44,8 @@ MainWindow::MainWindow(QWidget *parent) :
     card_reader = new Port(1);
     ui->verticalLayout->addWidget(port);
     ui->verticalLayout->addWidget(card_reader);
+
+    ui->actDirectory->setDisabled(true);
 }
 
 MainWindow::~MainWindow()
@@ -90,6 +92,7 @@ void MainWindow::renderToolbar() {
     connect(ui->actUpdUsers, SIGNAL(triggered(bool)), SLOT(getUserIndex()));
 
     connect(ui->pbGetUserCard, SIGNAL(clicked(bool)), SLOT(getUserCard()));
+    connect(ui->cbAdminAccess, SIGNAL(clicked(bool)), SLOT(changeAccess()));
 }
 
 void MainWindow::currentTabChanged(int tabNum) {
@@ -168,10 +171,18 @@ void MainWindow::closeEvent(QCloseEvent *event) {
    }
 }
 
-void MainWindow::accessCheck() {
-    if (db_status == "Подключено") {
+void MainWindow::changeAccess() {
+    isAdmin = ui->cbAdminAccess->isChecked();
+    accessCheck();
+}
 
+void MainWindow::accessCheck() {
+    if (isAdmin) {
+        ui->actDirectory->setDisabled(false);
+    } else {
+        ui->actDirectory->setDisabled(true);
     }
+
 }
 
 void MainWindow::onViewClick() {
@@ -304,7 +315,7 @@ void MainWindow::deleteFuels() {
 }
 
 void MainWindow::onEditFuelsClick() {
-    int idx = ui->tableFuel->currentIndex().r;
+    int idx = ui->tableFuel->currentIndex().row();
     if (idx < 0) {
         return;
     }
@@ -349,7 +360,7 @@ void MainWindow::deleteTanks() {
 }
 
 void MainWindow::onEditTanksClick() {
-    int idx = ui->tableTanks->currentIndex().r;
+    int idx = ui->tableTanks->currentIndex().row();
     if (idx < 0) {
         return;
     }

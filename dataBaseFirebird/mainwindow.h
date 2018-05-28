@@ -80,6 +80,7 @@ private slots:
     void readSettings();
     void closeEvent(QCloseEvent *event);
 
+    void changeAccess();
     void accessCheck();
 
     //my
@@ -121,6 +122,8 @@ private:
     QString azsNum = 0;
     QString pointNum = "";
     QMessageBox *mbx;
+
+    bool isAdmin = false;
 };
 
 #endif // MAINWINDOW_H

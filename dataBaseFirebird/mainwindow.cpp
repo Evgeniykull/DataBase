@@ -15,6 +15,7 @@
 #include "models/modeltanks.h"
 #include "models/modelpoints.h"
 #include "models/modellimit.h"
+#include <models/modelobject.h>
 #include "utils/treadworker.h"
 #include "utils/jsonconvertor.h"
 
@@ -88,6 +89,11 @@ void MainWindow::renderToolbar() {
     connect(ui->pbDeleteLimits, SIGNAL(clicked(bool)), SLOT(deleteLimits()));
     connect(ui->pbEditLimits, SIGNAL(clicked(bool)), SLOT(editLimits()));
 
+    connect(ui->pbAddObj, SIGNAL(clicked(bool)), SLOT(addObject()));
+    connect(ui->pbDeleteObj, SIGNAL(clicked(bool)), SLOT(deleteObject()));
+    connect(ui->pbEditObj, SIGNAL(clicked(bool)), SLOT(editObject()));
+    connect(ui->tableObject, SIGNAL(clicked(QModelIndex)), SLOT(changedObject(QModelIndex)));
+
     connect(ui->actConfigurate, SIGNAL(triggered(bool)), SLOT(startConfigurate()));
     connect(ui->actUpdUsers, SIGNAL(triggered(bool)), SLOT(getUserIndex()));
 
@@ -119,6 +125,8 @@ void MainWindow::currentTab2Changed(int tabNum) {
     case 2:
         updatePoints();
         break;
+    case 3:
+        updateObject();
     default:
         break;
     }
@@ -134,7 +142,6 @@ void MainWindow::writeSettings() {
     settings->setValue("path", ui->lePath->text());
     settings->setValue("userName", ui->leUserName->text());
     settings->setValue("pass", ui->lePassword->text());
-    settings->setValue("azsNum", ui->leAZSNum->text());
     settings->endGroup();
 }
 
@@ -150,11 +157,9 @@ void MainWindow::readSettings() {
     QString path = settings->value("path").toString();
     QString name = settings->value("userName").toString();
     QString pass = settings->value("pass").toString();
-    azsNum = settings->value("azsNum").toString();
     ui->lePath->setText(path);
     ui->leUserName->setText(name);
     ui->lePassword->setText(pass);
-    ui->leAZSNum->setText(azsNum);
     settings->endGroup();
 }
 
@@ -302,8 +307,7 @@ void MainWindow::addFuels() {
 }
 
 void MainWindow::deleteFuels() {
-    QModelIndex iid = ui->tableFuel->currentIndex();
-    int idx = iid.row();
+    int idx = ui->tableFuel->currentIndex().row();
     if (idx < 0) {
         return;
     }
@@ -508,6 +512,54 @@ void MainWindow::editLimits() {
     connect(limit_model, SIGNAL(needUpdate()), SLOT(updateLimits()));
     int limitid = model_limits->record(idx).value("id").toInt();
     limit_model->editLimits(limitid);
+}
+
+void MainWindow::updateObject() {
+    model_object = new QSqlRelationalTableModel(0, db);
+    model_object->setTable("OBJECT_TABLES");
+    model_object->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model_object->select();
+    ui->tableObject->setModel(model_object);
+    ui->tableObject->setColumnHidden(2, true);
+    ui->tableObject->setColumnHidden(3, true);
+    ui->tableObject->setColumnHidden(4, true);
+    ui->tableObject->setColumnHidden(5, true);
+    setTableFormat(ui->tableObject);
+}
+
+void MainWindow::addObject() {
+    ModelObject *object_model = new ModelObject(db);
+    connect(object_model, SIGNAL(needUpdate()), SLOT(updateObject()));
+    object_model->addObject();
+}
+
+void MainWindow::deleteObject() {
+    int idx = ui->tableObject->currentIndex().row();
+    if (idx < 0) {
+        return;
+    }
+
+    ModelObject *object_model = new ModelObject(db);
+    connect(object_model, SIGNAL(needUpdate()), SLOT(updateObject()));
+    int objectid = model_object->record(idx).value("objectid").toInt();
+    object_model->deleteObject(objectid);
+}
+
+void MainWindow::editObject() {
+    int idx = ui->tableObject->currentIndex().row();
+    if (idx < 0) {
+        return;
+    }
+
+    ModelObject *object_model = new ModelObject(db);
+    connect(object_model, SIGNAL(needUpdate()), SLOT(updateObject()));
+    int objectid = model_object->record(idx).value("objectid").toInt();
+    object_model->editObject(objectid);
+}
+
+void MainWindow::changedObject(QModelIndex idx) {
+    int objectid = model_object->record(idx.row()).value("objectid").toInt();
+    azsNum = QString::number(objectid);
 }
 
 void MainWindow::startConfigurate() {

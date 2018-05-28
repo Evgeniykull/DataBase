@@ -68,6 +68,12 @@ private slots:
     void deleteLimits();
     void editLimits();
 
+    void updateObject();
+    void addObject();
+    void deleteObject();
+    void editObject();
+    void changedObject(QModelIndex);
+
     void startConfigurate();
     void getUserCard();
     void changeUserCard();
@@ -102,6 +108,7 @@ private:
     QSqlRelationalTableModel *model_tanks;
     QSqlRelationalTableModel *model_points;
     QSqlRelationalTableModel *model_limits;
+    QSqlRelationalTableModel *model_object;
     TreeModel *model;
 
     void renderToolbar();

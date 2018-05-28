@@ -43,7 +43,9 @@ SOURCES += \
     dialogs/addpointsdialog.cpp \
     dialogs/getcarddialog.cpp \
     models/modellimit.cpp \
-    dialogs/addlimitsdialog.cpp
+    dialogs/addlimitsdialog.cpp \
+    models/modelobject.cpp \
+    dialogs/addobjectdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -64,7 +66,9 @@ HEADERS += \
     dialogs/addpointsdialog.h \
     dialogs/getcarddialog.h \
     models/modellimit.h \
-    dialogs/addlimitsdialog.h
+    dialogs/addlimitsdialog.h \
+    models/modelobject.h \
+    dialogs/addobjectdialog.h
 
 FORMS += \
         mainwindow.ui \
@@ -75,4 +79,5 @@ FORMS += \
     dialogs/addtanksdialog.ui \
     dialogs/addpointsdialog.ui \
     dialogs/getcarddialog.ui \
-    dialogs/addlimitsdialog.ui
+    dialogs/addlimitsdialog.ui \
+    dialogs/addobjectdialog.ui

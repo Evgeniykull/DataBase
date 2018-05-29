@@ -25,8 +25,8 @@ public slots:
     QList<QString> configureFuels();
 
 private slots:
-    void finishAddFuels(QString, QString, int);
-    void finishEditFuels(int, QString, QString, int);
+    void finishAddFuels(QString, QString, QString);
+    void finishEditFuels(int, QString, QString, QString);
 
 private:
     QSqlDatabase data_base;

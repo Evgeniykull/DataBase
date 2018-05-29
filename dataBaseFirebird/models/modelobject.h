@@ -22,6 +22,8 @@ public slots:
     void addObject();
     void deleteObject(int);
     void editObject(int);
+    QByteArray getSettings(int);
+    void setSettings(int, QString);
 
 private slots:
     void finishAddObject(QString, QString, QString);

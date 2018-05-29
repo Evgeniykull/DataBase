@@ -116,15 +116,15 @@
             <string>Топливо</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="0" colspan="3">
-             <widget class="QTableView" name="tableFuel"/>
-            </item>
             <item row="1" column="0">
              <widget class="QPushButton" name="pbAddFuel">
               <property name="text">
                <string>Добавить</string>
               </property>
              </widget>
+            </item>
+            <item row="0" column="0" colspan="3">
+             <widget class="QTableView" name="tableFuel"/>
             </item>
             <item row="1" column="1">
              <widget class="QPushButton" name="pbEditFuel">
@@ -226,15 +226,8 @@
             <string>Объекты</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_9">
-            <item row="0" column="0" colspan="3">
+            <item row="0" column="0" colspan="4">
              <widget class="QTableView" name="tableObject"/>
-            </item>
-            <item row="1" column="0">
-             <widget class="QPushButton" name="pbAddObj">
-              <property name="text">
-               <string>Добавить</string>
-              </property>
-             </widget>
             </item>
             <item row="1" column="1">
              <widget class="QPushButton" name="pbEditObj">
@@ -243,10 +236,24 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="2">
+            <item row="1" column="0">
+             <widget class="QPushButton" name="pbAddObj">
+              <property name="text">
+               <string>Добавить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="3">
              <widget class="QPushButton" name="pbDeleteObj">
               <property name="text">
                <string>Удалить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="2">
+             <widget class="QPushButton" name="pbSetObj">
+              <property name="text">
+               <string>Настроить</string>
               </property>
              </widget>
             </item>

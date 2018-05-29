@@ -45,7 +45,7 @@ AddFuelsDialog::~AddFuelsDialog()
 }
 
 void AddFuelsDialog::onButtonOkClick() {
-    int price = ui->lePrice->text().toInt();
+    QString price = ui->lePrice->text();
     QString name = ui->leName->text();
     QString viewName = ui->leViewName->text();
 

@@ -68,7 +68,8 @@ HEADERS += \
     models/modellimit.h \
     dialogs/addlimitsdialog.h \
     models/modelobject.h \
-    dialogs/addobjectdialog.h
+    dialogs/addobjectdialog.h \
+    utils/utils.h
 
 FORMS += \
         mainwindow.ui \

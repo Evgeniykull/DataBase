@@ -15,7 +15,7 @@ ModelFuels::ModelFuels(QSqlDatabase db, QObject *parent) : QObject(parent) {
 void ModelFuels::addFuels() {
     AddFuelsDialog * add_fuels = new AddFuelsDialog();
     add_fuels->show();
-    connect(add_fuels, SIGNAL(onOkClick(QString,QString,int)), SLOT(finishAddFuels(QString,QString,int)));
+    connect(add_fuels, SIGNAL(onOkClick(QString,QString,QString)), SLOT(finishAddFuels(QString,QString,QString)));
 }
 
 void ModelFuels::deleteFuels(int user_id) {
@@ -35,15 +35,15 @@ void ModelFuels::deleteFuels(int user_id) {
 void ModelFuels::editFuels(int user_id) {
     AddFuelsDialog * add_fuels = new AddFuelsDialog(user_id, data_base);
     add_fuels->show();
-    connect(add_fuels, SIGNAL(onOkClick(int,QString,QString,int)), SLOT(finishEditFuels(int,QString,QString,int)));
+    connect(add_fuels, SIGNAL(onOkClick(int,QString,QString,QString)), SLOT(finishEditFuels(int,QString,QString,QString)));
 }
 
-void ModelFuels::finishAddFuels(QString name, QString viewName, int price) {
+void ModelFuels::finishAddFuels(QString name, QString viewName, QString price) {
     QSqlQuery* query = new QSqlQuery(data_base);
     QString statament = QString("INSERT INTO fuels (name, viewname, price) VALUES ('%1', '%2', %3)")
             .arg(name)
             .arg(viewName)
-            .arg(QString::number(price));
+            .arg(price);
 
     query->exec(statament);
     if (query->lastError().isValid()) {
@@ -54,12 +54,12 @@ void ModelFuels::finishAddFuels(QString name, QString viewName, int price) {
     emit needUpdate();
 }
 
-void ModelFuels::finishEditFuels(int fuelId, QString name, QString viewName, int price) {
+void ModelFuels::finishEditFuels(int fuelId, QString name, QString viewName, QString price) {
     QSqlQuery* query = new QSqlQuery(data_base);
-    QString statament = QString("UPDATE fuels SET name=%1, viewname=%2, price=%3 WHERE fueldid=%4")
-            .arg("'" + name + "'")
-            .arg("'" +  viewName + "'")
-            .arg(QString::number(price))
+    QString statament = QString("UPDATE fuels SET name='%1', viewname='%2', price=%3 WHERE fueldid=%4")
+            .arg(name)
+            .arg(viewName)
+            .arg(price)
             .arg(QString::number(fuelId));
 
     query->exec(statament);

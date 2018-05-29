@@ -7,6 +7,8 @@
 #include <QByteArray>
 #include <QDateTime>
 #include <QTimer>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QDebug>
 
 #include "dialogs/adduserdialog.h"
@@ -18,6 +20,7 @@
 #include <models/modelobject.h>
 #include "utils/treadworker.h"
 #include "utils/jsonconvertor.h"
+#include "utils/utils.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -35,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     settings = new QSettings("settings.conf", QSettings::IniFormat);
     readSettings();
+    changeAccess();
     onConnectClick();
 
     connect(ui->pbConnect, SIGNAL(clicked(bool)), SLOT(onConnectClick()));
@@ -45,8 +49,6 @@ MainWindow::MainWindow(QWidget *parent) :
     card_reader = new Port(1);
     ui->verticalLayout->addWidget(port);
     ui->verticalLayout->addWidget(card_reader);
-
-    ui->actDirectory->setDisabled(true);
 }
 
 MainWindow::~MainWindow()
@@ -93,6 +95,7 @@ void MainWindow::renderToolbar() {
     connect(ui->pbDeleteObj, SIGNAL(clicked(bool)), SLOT(deleteObject()));
     connect(ui->pbEditObj, SIGNAL(clicked(bool)), SLOT(editObject()));
     connect(ui->tableObject, SIGNAL(clicked(QModelIndex)), SLOT(changedObject(QModelIndex)));
+    connect(ui->pbSetObj, SIGNAL(clicked(bool)), SLOT(setObjectSettings()));
 
     connect(ui->actConfigurate, SIGNAL(triggered(bool)), SLOT(startConfigurate()));
     connect(ui->actUpdUsers, SIGNAL(triggered(bool)), SLOT(getUserIndex()));
@@ -142,6 +145,7 @@ void MainWindow::writeSettings() {
     settings->setValue("path", ui->lePath->text());
     settings->setValue("userName", ui->leUserName->text());
     settings->setValue("pass", ui->lePassword->text());
+    settings->setValue("isAdmin", ui->cbAdminAccess->isChecked());
     settings->endGroup();
 }
 
@@ -157,9 +161,11 @@ void MainWindow::readSettings() {
     QString path = settings->value("path").toString();
     QString name = settings->value("userName").toString();
     QString pass = settings->value("pass").toString();
+    bool adm = settings->value("isAdmin").toBool();
     ui->lePath->setText(path);
     ui->leUserName->setText(name);
     ui->lePassword->setText(pass);
+    ui->cbAdminAccess->setChecked(adm);
     settings->endGroup();
 }
 
@@ -182,12 +188,29 @@ void MainWindow::changeAccess() {
 }
 
 void MainWindow::accessCheck() {
-    if (isAdmin) {
-        ui->actDirectory->setDisabled(false);
+    if (isAdmin && azsNum > 0) {
+        ui->pbAddObj->setDisabled(false);
+        ui->pbDeleteObj->setDisabled(false);
+        ui->pbEditObj->setDisabled(false);
+        ui->pbSetObj->setDisabled(false);
+        ui->pbAddPoints->setDisabled(false);
+        ui->pbDeletePoints->setDisabled(false);
+        ui->pbEditPoints->setDisabled(false);
+        ui->pbAddTanks->setDisabled(false);
+        ui->pbDeleteTanks->setDisabled(false);
+        ui->pbEditTanks->setDisabled(false);
     } else {
-        ui->actDirectory->setDisabled(true);
+        ui->pbAddObj->setDisabled(true);
+        ui->pbDeleteObj->setDisabled(true);
+        ui->pbEditObj->setDisabled(true);
+        ui->pbSetObj->setDisabled(true);
+        ui->pbAddPoints->setDisabled(true);
+        ui->pbDeletePoints->setDisabled(true);
+        ui->pbEditPoints->setDisabled(true);
+        ui->pbAddTanks->setDisabled(true);
+        ui->pbDeleteTanks->setDisabled(true);
+        ui->pbEditTanks->setDisabled(true);
     }
-
 }
 
 void MainWindow::onViewClick() {
@@ -211,10 +234,8 @@ void MainWindow::onConnectClick() {
     db = QSqlDatabase::addDatabase("QIBASE");
     QString path = ui->lePath->text().isEmpty() ? "TESTBASE.FDB" : ui->lePath->text();
     db.setDatabaseName(path);
-    db.setUserName(ui->leUserName->text());
-    db.setPassword(ui->lePassword->text());
-    //db.setUserName("SYSDBA");
-    //db.setPassword("123");
+    db.setUserName(ui->leUserName->text()); //SYSDBA
+    db.setPassword(ui->lePassword->text()); //123
     bool is_open = db.open();
 
     db_status = is_open ? "Подключено" : db.lastError().text();
@@ -257,7 +278,6 @@ void MainWindow::updateUsers() {
     connect(ui->treeView, SIGNAL(clicked(QModelIndex)), model, SLOT(Clicked(QModelIndex)));
     //отслеживать изменение info
     //connect(ui->treeView, SIGNAL(clicked(QModelIndex)), SLOT(onUserClick(QModelIndex)));
-
     ui->teUserInfo->clear();
 }
 
@@ -560,6 +580,57 @@ void MainWindow::editObject() {
 void MainWindow::changedObject(QModelIndex idx) {
     int objectid = model_object->record(idx.row()).value("objectid").toInt();
     azsNum = QString::number(objectid);
+    accessCheck();
+
+    //TODO
+    //ко клику менять port = Port(port_settngs)
+}
+
+void MainWindow::setObjectSettings() {
+    int idx = ui->tableObject->currentIndex().row();
+    if (idx < 0) {
+        return;
+    }
+    ModelObject *object_model = new ModelObject(db);
+    int objectid = model_object->record(idx).value("objectid").toInt();
+    QByteArray sett_js = object_model->getSettings(objectid);
+    if (sett_js.isEmpty()) {
+        port_settings = new PortSettings();
+        connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(writeObjectSettings()));
+        port_settings->exec();
+    } else {
+        QJsonDocument doc = QJsonDocument::fromJson(sett_js);
+        QJsonObject json_obj = doc.object();
+        QString adr = json_obj["addres"].toString();
+        QString br = QString::number(json_obj["baudRate"].toInt());
+        QString bop = QString::number(json_obj["byteOnPackage"].toInt());
+        QString db = QString::number(json_obj["dataBits"].toInt());
+        QString fc = json_obj["flowControl"].toString();
+        QString na = json_obj["name"].toString();
+        QString pa = QString::number(json_obj["pairy"].toInt());
+        QString sb = QString::number(json_obj["stopBits"].toInt());
+
+        port_settings = new PortSettings(adr, br, bop, db, fc, na, pa, sb);
+        connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(writeObjectSettings()));
+        port_settings->exec();
+    }
+}
+
+void MainWindow::writeObjectSettings() {
+    ModelObject *object_model = new ModelObject(db);
+    QJsonObject sett_json {
+        {"addres", port_settings->SettingsPort.addres},
+        {"baudRate", port_settings->SettingsPort.baudRate},
+        {"byteOnPackage", port_settings->SettingsPort.byteOnPackage},
+        {"dataBits", port_settings->SettingsPort.dataBits},
+        {"flowControl", port_settings->SettingsPort.flowControl},
+        {"name", port_settings->SettingsPort.name},
+        {"pairy", port_settings->SettingsPort.parity},
+        {"stopBits", port_settings->SettingsPort.stopBits}
+    };
+    QJsonDocument doc(sett_json);
+    QString strJson(doc.toJson(QJsonDocument::Compact));
+    object_model->setSettings(azsNum.toInt(), strJson);
 }
 
 void MainWindow::startConfigurate() {
@@ -740,8 +811,6 @@ void MainWindow::updateUserOnDevice(int userId) {
     }
 }
 
-#include <QJsonDocument>
-#include <QJsonObject>
 void MainWindow::parseArray(QByteArray dataArr, int &start, int &len) {
     JsonConvertor *conv = new JsonConvertor();
     QString json = conv->dataToJson(dataArr);

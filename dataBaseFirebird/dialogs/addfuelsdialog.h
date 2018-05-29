@@ -18,8 +18,8 @@ public:
     ~AddFuelsDialog();
 
 signals:
-    void onOkClick(int, QString, QString, int);
-    void onOkClick(QString, QString, int);
+    void onOkClick(int, QString, QString, QString);
+    void onOkClick(QString, QString, QString);
 
 private slots:
     void onButtonOkClick();

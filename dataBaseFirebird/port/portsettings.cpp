@@ -34,6 +34,37 @@ PortSettings::PortSettings(int addr, QWidget *parent) :
     ui->leAddres->setText(QString::number(addr));
 }
 
+PortSettings::PortSettings(QString ad, QString br, QString bop, QString db, QString fc, QString na, QString pa, QString sb, QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::PortSettings)
+{
+    ui->setupUi(this);
+    addValueToSettings();
+    getPortsInfo();
+    ui->leAddres->setValidator(new QIntValidator(0, 100000, this));
+    connect(ui->cbBaudRate, SIGNAL(currentIndexChanged(int)), this, SLOT(checkCustomBaudRatePolicy(int)));
+    connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onOkClick2()));
+
+    ui->cbPortName->setCurrentText(na);
+    ui->cbBaudRate->setCurrentText(br);
+    ui->cbDataBist->setCurrentText(db);
+    ui->cbPairity->setCurrentText(pa);
+    ui->cbStopBits->setCurrentText(sb);
+    ui->cbFlowControl->setCurrentText(fc);
+    ui->leAddres->setText(ad);
+    ui->leByteInPacket->setText(bop);
+
+
+    SettingsPort.name = ui->cbPortName->itemText(ui->cbPortName->currentIndex());
+    SettingsPort.baudRate = (QSerialPort::BaudRate) ui->cbBaudRate->itemText(ui->cbBaudRate->currentIndex()).toInt();
+    SettingsPort.dataBits = (QSerialPort::DataBits) ui->cbDataBist->itemText(ui->cbDataBist->currentIndex()).toInt();
+    SettingsPort.parity = (QSerialPort::Parity) ui->cbPairity->itemText(ui->cbPairity->currentIndex()).toInt();
+    SettingsPort.stopBits = (QSerialPort::StopBits) ui->cbStopBits->itemText(ui->cbStopBits->currentIndex()).toInt();
+    SettingsPort.flowControl = (QSerialPort::FlowControl) ui->cbFlowControl->itemText(ui->cbFlowControl->currentIndex()).toInt();
+    SettingsPort.addres = ui->leAddres->text();
+    SettingsPort.byteOnPackage = ui->leByteInPacket->text().toInt();
+}
+
 PortSettings::~PortSettings()
 {
     delete ui;
@@ -137,6 +168,19 @@ void PortSettings::getPortSettingsFromFile() {
 
 void PortSettings::onCacnelClick() {
     isChanged = false;
+}
+
+void PortSettings::onOkClick2() {
+    SettingsPort.name = ui->cbPortName->itemText(ui->cbPortName->currentIndex());
+    SettingsPort.baudRate = (QSerialPort::BaudRate) ui->cbBaudRate->itemText(ui->cbBaudRate->currentIndex()).toInt();
+    SettingsPort.dataBits = (QSerialPort::DataBits) ui->cbDataBist->itemText(ui->cbDataBist->currentIndex()).toInt();
+    SettingsPort.parity = (QSerialPort::Parity) ui->cbPairity->itemText(ui->cbPairity->currentIndex()).toInt();
+    SettingsPort.stopBits = (QSerialPort::StopBits) ui->cbStopBits->itemText(ui->cbStopBits->currentIndex()).toInt();
+    SettingsPort.flowControl = (QSerialPort::FlowControl) ui->cbFlowControl->itemText(ui->cbFlowControl->currentIndex()).toInt();
+    SettingsPort.addres = ui->leAddres->text();
+    SettingsPort.byteOnPackage = ui->leByteInPacket->text().toInt();
+
+    emit settingsIsChanged();
 }
 
 void PortSettings::onOkClick() {

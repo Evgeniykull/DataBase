@@ -33,6 +33,7 @@ AddObjectDialog::AddObjectDialog(int object_id, QSqlDatabase db, QWidget *parent
     QSqlRecord rec = query->record();
 
     ui->leObjectId->setText(rec.value("objectId").toString());
+    ui->leObjectId->setDisabled(true);
     ui->leName->setText(rec.value("objectName").toString());
     ui->lePass->setText(rec.value("ADMINPASSWORD").toString());
 }

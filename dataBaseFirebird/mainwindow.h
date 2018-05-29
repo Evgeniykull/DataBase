@@ -12,6 +12,7 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include "port/port.h"
+#include "port/portsettings.h"
 
 namespace Ui {
 class MainWindow;
@@ -73,6 +74,8 @@ private slots:
     void deleteObject();
     void editObject();
     void changedObject(QModelIndex);
+    void setObjectSettings();
+    void writeObjectSettings();
 
     void startConfigurate();
     void getUserCard();
@@ -120,6 +123,7 @@ private:
     QStringList port_names;
     Port *port;
     Port *card_reader;
+    PortSettings *port_settings;
     int selected_user_row = -1;
     int selected_user_id = -1;
 

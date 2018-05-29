@@ -122,6 +122,9 @@
      <height>20</height>
     </rect>
    </property>
+   <property name="inputMask">
+    <string>00.00</string>
+   </property>
   </widget>
  </widget>
  <resources/>

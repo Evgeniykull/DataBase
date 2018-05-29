@@ -5,6 +5,7 @@
 #include <QtSerialPort/QSerialPort>
 #include <QSerialPortInfo>
 #include <QSettings>
+#include <utils/utils.h>
 
 namespace Ui {
 class PortSettings;
@@ -14,20 +15,11 @@ class PortSettings : public QDialog
 {
     Q_OBJECT
 
-struct Settings {
-    QString name;
-    qint32 baudRate;
-    QSerialPort::DataBits dataBits;
-    QSerialPort::Parity parity;
-    QSerialPort::StopBits stopBits;
-    QSerialPort::FlowControl flowControl;
-    QString addres;
-    int byteOnPackage;
-};
-
 public:
     explicit PortSettings(QWidget *parent = 0);
     explicit PortSettings(int addr, QWidget *parent = 0);
+    explicit PortSettings(QString,QString,QString,QString,QString,QString,QString,QString,QWidget *parent = 0);
+
     ~PortSettings();
     Settings SettingsPort;
     bool isChanged;
@@ -35,6 +27,7 @@ public:
 private slots:
     void checkCustomBaudRatePolicy(int idx);
     void onOkClick();
+    void onOkClick2();
     void onCacnelClick();
 
 signals:

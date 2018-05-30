@@ -12,6 +12,7 @@
 #include <QDebug>
 
 #include "dialogs/adduserdialog.h"
+#include "dialogs/getcarddialog.h"
 #include "models/modeluser.h"
 #include "models/modelfuels.h"
 #include "models/modeltanks.h"
@@ -31,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pbView, SIGNAL(clicked()), SLOT(onViewClick()));
     renderToolbar();
     ui->tabWidget->tabBar()->hide(); //для скрытия табов
+    ui->menuBar->hide();
     status_bar = new QLabel(this);    
     port_status = new QLabel(this);
     ui->statusBar->addWidget(status_bar); //для строки состояния
@@ -45,9 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->teUserInfo, &QTextEdit::textChanged, this, &MainWindow::updateLimits);
 
     //connect to device
-    port = new Port();
     card_reader = new Port(1);
-    ui->verticalLayout->addWidget(port);
     ui->verticalLayout->addWidget(card_reader);
 }
 
@@ -97,8 +97,10 @@ void MainWindow::renderToolbar() {
     connect(ui->tableObject, SIGNAL(clicked(QModelIndex)), SLOT(changedObject(QModelIndex)));
     connect(ui->pbSetObj, SIGNAL(clicked(bool)), SLOT(setObjectSettings()));
 
-    connect(ui->actConfigurate, SIGNAL(triggered(bool)), SLOT(startConfigurate()));
-    connect(ui->actUpdUsers, SIGNAL(triggered(bool)), SLOT(getUserIndex()));
+    connect(ui->pbGetHistory, SIGNAL(clicked(bool)), SLOT(getHistory()));
+
+    connect(ui->pbConfigure, SIGNAL(clicked(bool)), SLOT(startConfigurate()));
+    connect(ui->pbUserUpdate, SIGNAL(clicked(bool)), SLOT(getUserIndex()));
 
     connect(ui->pbGetUserCard, SIGNAL(clicked(bool)), SLOT(getUserCard()));
     connect(ui->cbAdminAccess, SIGNAL(clicked(bool)), SLOT(changeAccess()));
@@ -130,6 +132,8 @@ void MainWindow::currentTab2Changed(int tabNum) {
         break;
     case 3:
         updateObject();
+    case 4:
+        updateHistory();
     default:
         break;
     }
@@ -188,6 +192,24 @@ void MainWindow::changeAccess() {
 }
 
 void MainWindow::accessCheck() {
+    if (isAdmin) {
+        ui->pbAddFuel->setDisabled(false);
+        ui->pbEditFuel->setDisabled(false);
+        ui->pbDeleteFuel->setDisabled(false);
+    } else {
+        ui->pbAddFuel->setDisabled(true);
+        ui->pbEditFuel->setDisabled(true);
+        ui->pbDeleteFuel->setDisabled(true);
+    }
+
+    if (azsNum > 0) {
+        ui->pbUserUpdate->setDisabled(false);
+        ui->pbGetHistory->setDisabled(false);
+    } else {
+        ui->pbUserUpdate->setDisabled(true);
+        ui->pbGetHistory->setDisabled(true);
+    }
+
     if (isAdmin && azsNum > 0) {
         ui->pbAddObj->setDisabled(false);
         ui->pbDeleteObj->setDisabled(false);
@@ -199,6 +221,7 @@ void MainWindow::accessCheck() {
         ui->pbAddTanks->setDisabled(false);
         ui->pbDeleteTanks->setDisabled(false);
         ui->pbEditTanks->setDisabled(false);
+        ui->pbConfigure->setDisabled(false);
     } else {
         ui->pbAddObj->setDisabled(true);
         ui->pbDeleteObj->setDisabled(true);
@@ -210,6 +233,7 @@ void MainWindow::accessCheck() {
         ui->pbAddTanks->setDisabled(true);
         ui->pbDeleteTanks->setDisabled(true);
         ui->pbEditTanks->setDisabled(true);
+        ui->pbConfigure->setDisabled(true);
     }
 }
 
@@ -244,6 +268,7 @@ void MainWindow::onConnectClick() {
         status_bar->setText(db_status);
         ui->actUser->setDisabled(false);
         ui->actDirectory->setDisabled(false);
+        ui->pbConnect->hide();
     } else {
         ui->actUser->setDisabled(true);
         ui->actDirectory->setDisabled(true);
@@ -534,6 +559,32 @@ void MainWindow::editLimits() {
     limit_model->editLimits(limitid);
 }
 
+void MainWindow::updateHistory() {
+    model_history = new QSqlRelationalTableModel(0, db);
+    model_history->setTable("UNASSMHISTORY");
+    model_history->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    model_history->select();
+    ui->tableHistory->setModel(model_history);
+    setTableFormat(ui->tableHistory);
+}
+
+void MainWindow::getHistory() {
+    port = new Port(port_settings);
+    QSqlQuery* query = new QSqlQuery(db);
+    QString statament = QString("SELECT max(id) FROM UNASSMHISTORY WHERE OBJECTID=%1").arg(azsNum);
+    query->exec(statament);
+    query->next();
+    int max_id = query->value(0).toInt();
+    if (max_id <= 0) {
+        QByteArray anw = port->write("get История");
+        anw = anw.mid(anw.indexOf("start:")+6, 4);
+        anw = anw.mid(0, anw.indexOf("\r"));
+        max_id = anw.toInt();
+    }
+    //получили CURID
+
+}
+
 void MainWindow::updateObject() {
     model_object = new QSqlRelationalTableModel(0, db);
     model_object->setTable("OBJECT_TABLES");
@@ -581,9 +632,23 @@ void MainWindow::changedObject(QModelIndex idx) {
     int objectid = model_object->record(idx.row()).value("objectid").toInt();
     azsNum = QString::number(objectid);
     accessCheck();
+    QByteArray sett_js = model_object->record(idx.row()).value("CONNECTIONPROPERTY").toByteArray();
+    changedObjectSettings(sett_js);
+}
 
-    //TODO
-    //ко клику менять port = Port(port_settngs)
+void MainWindow::changedObjectSettings(QByteArray objSett) {
+    QJsonDocument doc = QJsonDocument::fromJson(objSett);
+    QJsonObject json_obj = doc.object();
+    QString adr = json_obj["addres"].toString();
+    QString br = QString::number(json_obj["baudRate"].toInt());
+    QString bop = QString::number(json_obj["byteOnPackage"].toInt());
+    QString db = QString::number(json_obj["dataBits"].toInt());
+    QString fc = json_obj["flowControl"].toString();
+    QString na = json_obj["name"].toString();
+    QString pa = QString::number(json_obj["pairy"].toInt());
+    QString sb = QString::number(json_obj["stopBits"].toInt());
+
+    port_settings = new PortSettings(adr, br, bop, db, fc, na, pa, sb);
 }
 
 void MainWindow::setObjectSettings() {
@@ -599,18 +664,7 @@ void MainWindow::setObjectSettings() {
         connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(writeObjectSettings()));
         port_settings->exec();
     } else {
-        QJsonDocument doc = QJsonDocument::fromJson(sett_js);
-        QJsonObject json_obj = doc.object();
-        QString adr = json_obj["addres"].toString();
-        QString br = QString::number(json_obj["baudRate"].toInt());
-        QString bop = QString::number(json_obj["byteOnPackage"].toInt());
-        QString db = QString::number(json_obj["dataBits"].toInt());
-        QString fc = json_obj["flowControl"].toString();
-        QString na = json_obj["name"].toString();
-        QString pa = QString::number(json_obj["pairy"].toInt());
-        QString sb = QString::number(json_obj["stopBits"].toInt());
-
-        port_settings = new PortSettings(adr, br, bop, db, fc, na, pa, sb);
+        changedObjectSettings(sett_js);
         connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(writeObjectSettings()));
         port_settings->exec();
     }
@@ -652,27 +706,31 @@ void MainWindow::startConfigurate() {
         return;
     }
 
+    port = new Port(port_settings);
     bool ok = port->changeAccess(1);
 
     if (ok) {
         for(int i=0; i<fuel_data.length(); i++){
-            QByteArray conf_answ = port->writeData(fuel_data.at(i).toUtf8());
+            QByteArray conf_answ = port->write(fuel_data.at(i).toUtf8());
             if (conf_answ.indexOf("OK") < 0) {
                 qDebug() << "error on configurate fuel #" << i;
+                return;
             }
         }
 
         for(int i=0; i<tank_data.length(); i++){
-            QByteArray conf_answ = port->writeData(tank_data.at(i).toUtf8());
+            QByteArray conf_answ = port->write(tank_data.at(i).toUtf8());
             if (conf_answ.indexOf("OK") < 0) {
                 qDebug() << "error on configurate tank #" << i;
+                return;
             }
         }
 
         for(int i=0; i<point_data.length(); i++){
-            QByteArray conf_answ = port->writeData(point_data.at(i).toUtf8());
+            QByteArray conf_answ = port->write(point_data.at(i).toUtf8());
             if (conf_answ.indexOf("OK") < 0) {
                 qDebug() << "error on configurate point #" << i;
+                return;
             }
         }
     } else {
@@ -702,13 +760,9 @@ QString convertData(QString data) {
 }
 
 void MainWindow::getUserIndex() {
-    /*QByteArray query3 = "get UserArr[7]";
-    QByteArray answ3 = port->writeData(query3);
-    qDebug() << answ3;
-    return;*/
-
+    port = new Port(port_settings);
     QByteArray query = "get UserIndex";
-    QByteArray answ = port->writeData(query);
+    QByteArray answ = port->write(query);
     int arr_start, arr_len;
     parseArray(answ, arr_start, arr_len);
 
@@ -784,21 +838,19 @@ void MainWindow::updateUserOnDevice(int userId) {
                     .arg(limits_query->value("VALUEL").toString());
         }
         userLimits = userLimits.mid(0, userLimits.length()-1);
-
         userNewLimits.append(userLimits);
+        //какое поведение должно быть, если лимитов нет?
         userNewLimits.append("]");
-        //userNewData.append(userLimits);
-        //userNewData.append("]}");
     }
 
-    QByteArray user_answ = port->writeData(userNewData.toUtf8());
+    QByteArray user_answ = port->write(userNewData.toUtf8());
     qDebug() << "Trrrrr";
     if (user_answ.indexOf("OK") < 0) {
         qDebug() << "Error: " << userNewData;
         qDebug() << "error on user set #" << userId;
     } else {
         if (!userNewLimits.isEmpty()) {
-            QByteArray user_answ2 = port->writeData(userNewLimits.toUtf8());
+            QByteArray user_answ2 = port->write(userNewLimits.toUtf8());
             if (user_answ2.indexOf("OK") < 0) {
                 qDebug() << "Error: " << userNewLimits;
                 return;
@@ -824,7 +876,7 @@ QVector<int>* MainWindow::getDataByLoop(QByteArray query, int start, int len, QS
     QVector<int> *vct = new QVector<int>;
     JsonConvertor *conv = new JsonConvertor();
     for (int i = start; i < start + len; i++) {
-        QByteArray middle_answ = port->writeData(query + "[" + QByteArray::number(i) + "]");
+        QByteArray middle_answ = port->write(query + "[" + QByteArray::number(i) + "]");
         QString json = conv->dataToJson(middle_answ);
         QJsonObject obj = QJsonDocument::fromJson(json.toUtf8()).object();
         vct->append(obj[field].toInt());
@@ -840,7 +892,7 @@ QMap<int, QJsonObject>* MainWindow::getUsersOnDevice(QVector<int> users_ids) {
     QByteArray query = "get UserArr";
     JsonConvertor *conv = new JsonConvertor();
     for (int i=0; i<users_ids.length(); i++) {
-        QByteArray middle_answ = port->writeData(query + "[" + QByteArray::number(users_ids[i]) + "]");
+        QByteArray middle_answ = port->write(query + "[" + QByteArray::number(users_ids[i]) + "]");
         QString json = conv->dataToJson(middle_answ);
         QJsonParseError *err = new QJsonParseError();
         QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8(), err);
@@ -854,7 +906,6 @@ QMap<int, QJsonObject>* MainWindow::getUsersOnDevice(QVector<int> users_ids) {
     return device_users;
 }
 
-#include "dialogs/getcarddialog.h"
 void MainWindow::getUserCard() {
     QString info = ui->teUserInfo->toPlainText();
     int pos1 = info.indexOf(":");

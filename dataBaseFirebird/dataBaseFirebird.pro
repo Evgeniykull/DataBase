@@ -45,7 +45,8 @@ SOURCES += \
     models/modellimit.cpp \
     dialogs/addlimitsdialog.cpp \
     models/modelobject.cpp \
-    dialogs/addobjectdialog.cpp
+    dialogs/addobjectdialog.cpp \
+    models/modelhistory.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -69,7 +70,8 @@ HEADERS += \
     dialogs/addlimitsdialog.h \
     models/modelobject.h \
     dialogs/addobjectdialog.h \
-    utils/utils.h
+    utils/utils.h \
+    models/modelhistory.h
 
 FORMS += \
         mainwindow.ui \

@@ -39,6 +39,25 @@ Port::Port(int port_addr, QWidget *parent) :
     connect(ui->pbUpdateAccess, SIGNAL(clicked(bool)), SLOT(onAccessUpdateClick()));
 }
 
+Port::Port(PortSettings *ps, QWidget *parent) :
+    QGroupBox(parent),
+    ui(new Ui::Port)
+{
+    ui->setupUi(this);
+    port = new QSerialPort(this);
+    port_settings = ps;
+
+    sett.name = port_settings->SettingsPort.name;
+    sett.baudRate = port_settings->SettingsPort.baudRate;
+    sett.dataBits = port_settings->SettingsPort.dataBits;
+    sett.parity = port_settings->SettingsPort.parity;
+    sett.stopBits = port_settings->SettingsPort.stopBits;
+    sett.flowControl = port_settings->SettingsPort.flowControl;
+    sett.byteOnPackage = port_settings->SettingsPort.byteOnPackage;
+    ui->lblPortName->setText(sett.name);
+    sett.addres = port_settings->SettingsPort.addres;
+}
+
 Port::~Port()
 {
     delete ui;

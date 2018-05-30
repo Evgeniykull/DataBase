@@ -28,6 +28,7 @@ struct Settings {
 public:
     explicit Port(QWidget *parent = 0);
     explicit Port(int port_addr, QWidget *parent = 0);
+    explicit Port(PortSettings *ps, QWidget *parent = 0);
     ~Port();
     void sendData(QByteArray);
     QByteArray writeData(QByteArray text);

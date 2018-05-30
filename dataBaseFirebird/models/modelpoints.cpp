@@ -92,22 +92,48 @@ QList<QString> ModelPoints::configurePoints() {
     query->first();
 
     QList<int> disps_id_list = disps_id_set->toList();
+    int p = 0;
     for (int i=0; i<disps_id_list.size(); i++) {
+        p++;
         QString statament2 = QString("SELECT * FROM points WHERE dispsid=%1").arg(disps_id_list[i]);
         query->exec(statament2);
 
         QString data = QString("set Установки.Колонки[%1]:{Рукава[]:[").arg(QString::number(i));
         QString mid_data="";
+        int j = 0;
         while(query->next()) {
+            j++;
             mid_data += QString("{Работа:%1 Адрес:%2 Резервуар:%3},")
                     .arg(query->value(5).toString())
                     .arg(query->value(3).toString())
                     .arg(query->value(4).toString());
+            if (j == 5) {
+                break;
+            }
         }
+        while (j < 5) {
+            mid_data += "{Работа:0 Адрес:0 Резервуар:0},";
+            j++;
+        }
+
         mid_data = mid_data.mid(0, mid_data.length()-1);
         data += mid_data;
         data.append("]}");
         fnsh->push_back(data);
+        if (p == 12) {
+            break;
+        }
+    }
+
+    while (p < 12) {
+        QString data = QString("set Установки.Колонки[%1]:{Рукава[]:[").arg(QString::number(p));
+        for (int i=0; i<5; i++) {
+            data+= "{Работа:%1 Адрес:%2 Резервуар:%3},";
+        }
+        data = data.mid(0, data.length()-1);
+        data.append("]}");
+        fnsh->push_back(data);
+        p++;
     }
 
     return *fnsh;

@@ -76,6 +76,10 @@ private slots:
     void changedObject(QModelIndex);
     void setObjectSettings();
     void writeObjectSettings();
+    void changedObjectSettings(QByteArray);
+
+    void updateHistory();
+    void getHistory();
 
     void startConfigurate();
     void getUserCard();
@@ -112,6 +116,7 @@ private:
     QSqlRelationalTableModel *model_points;
     QSqlRelationalTableModel *model_limits;
     QSqlRelationalTableModel *model_object;
+    QSqlRelationalTableModel *model_history;
     TreeModel *model;
 
     void renderToolbar();

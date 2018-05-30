@@ -92,6 +92,16 @@ QList<QString> ModelTanks::configureTanks() {
         data += json_data;
         fnsh->push_back(data);
         i++;
+        if (i == 8) {
+            break;
+        }
     }
+
+    while (i < 8) {
+        QString data = QString("set Установки.Резервуары[%1]:{Резервуар:0 Топливо:0 Адрес:0}").arg(QString::number(i));
+        fnsh->push_back(data);
+        i++;
+    }
+
     return *fnsh;
 }

@@ -226,13 +226,20 @@
             <string>Объекты</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_9">
-            <item row="0" column="0" colspan="4">
+            <item row="0" column="0" colspan="3">
              <widget class="QTableView" name="tableObject"/>
             </item>
             <item row="1" column="1">
              <widget class="QPushButton" name="pbEditObj">
               <property name="text">
                <string>Редактрировать</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QPushButton" name="pbSetObj">
+              <property name="text">
+               <string>Настроить</string>
               </property>
              </widget>
             </item>
@@ -243,19 +250,46 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="3">
+            <item row="1" column="2">
              <widget class="QPushButton" name="pbDeleteObj">
               <property name="text">
                <string>Удалить</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="2">
-             <widget class="QPushButton" name="pbSetObj">
+            <item row="2" column="1">
+             <widget class="QPushButton" name="pbConfigure">
               <property name="text">
-               <string>Настроить</string>
+               <string>Конфигурировать</string>
               </property>
              </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QPushButton" name="pbUserUpdate">
+              <property name="text">
+               <string>Обновление пользователей</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab">
+           <attribute name="title">
+            <string>История</string>
+           </attribute>
+           <layout class="QGridLayout" name="gridLayout_10">
+            <item row="2" column="0">
+             <widget class="QPushButton" name="pbGetHistory">
+              <property name="text">
+               <string>Получить</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QTableView" name="tableHistory"/>
+            </item>
+            <item row="0" column="0">
+             <widget class="QTextBrowser" name="textBrowser"/>
             </item>
            </layout>
           </widget>
@@ -393,21 +427,7 @@
     </property>
     <addaction name="actExit"/>
    </widget>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>Конфигурация</string>
-    </property>
-    <addaction name="actConfigurate"/>
-   </widget>
-   <widget class="QMenu" name="menu_2">
-    <property name="title">
-     <string>Обновить</string>
-    </property>
-    <addaction name="actUpdUsers"/>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menu"/>
-   <addaction name="menu_2"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">

@@ -88,6 +88,16 @@ QList<QString> ModelFuels::configureFuels() {
         data += json_data;
         fnsh->push_back(data);
         i++;
+        if (i == 8) {
+            break;
+        }
     }
+
+    while (i < 8) {
+        QString data = QString("set Установки.ВидыТоплива[%1]:{Топливо:0 Цена:0 Наименование:\"\"}").arg(QString::number(i));
+        fnsh->push_back(data);
+        i++;
+    }
+
     return *fnsh;
 }

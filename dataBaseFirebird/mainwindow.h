@@ -11,6 +11,7 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QProgressDialog>
 #include "port/port.h"
 #include "port/portsettings.h"
 
@@ -138,6 +139,7 @@ private:
     QString azsNum = 0;
     QString pointNum = "";
     QMessageBox *mbx;
+    QProgressDialog *progr_dialog;
 
     bool isAdmin = false;
 };

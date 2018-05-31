@@ -568,21 +568,93 @@ void MainWindow::updateHistory() {
     setTableFormat(ui->tableHistory);
 }
 
+//TODO добавить графику на процесс
 void MainWindow::getHistory() {
     port = new Port(port_settings);
+
+    //синхронизируем время
+    QByteArray anw1 = port->write("get Состояние.Время");
+    QString dev_time = anw1.mid(anw1.indexOf("Время:")+12, 19);
+    QString cur_dt = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
+    qint64 sec1 = QDateTime::fromString(dev_time, "dd.MM.yyyy hh:mm:ss").toSecsSinceEpoch();
+    qint64 sec2 = QDateTime::fromString(cur_dt, "dd.MM.yyyy hh:mm:ss").toSecsSinceEpoch();
+    qint64 dd = abs(sec2 - sec1);
+
+    if (dd > 60){
+        QString com = QString("run УстВремя: \"%1\"").arg(cur_dt);
+        port->write(com.toUtf8());
+    }
+
     QSqlQuery* query = new QSqlQuery(db);
     QString statament = QString("SELECT max(id) FROM UNASSMHISTORY WHERE OBJECTID=%1").arg(azsNum);
     query->exec(statament);
     query->next();
-    int max_id = query->value(0).toInt();
-    if (max_id <= 0) {
+    int curid = query->value(0).toInt();
+    if (curid <= 0) {
         QByteArray anw = port->write("get История");
         anw = anw.mid(anw.indexOf("start:")+6, 4);
         anw = anw.mid(0, anw.indexOf("\r"));
-        max_id = anw.toInt();
+        curid = anw.toInt();
     }
-    //получили CURID
 
+    QByteArray anw = port->write("get Состояние.История");
+    anw = anw.mid(anw.indexOf("Текущий:")+15, 4);
+    anw = anw.mid(0, anw.indexOf("\r"));
+    int endid = anw.toInt();
+
+    if (endid < curid) {
+        return;
+    }
+
+    progr_dialog = new QProgressDialog("Считывание истории", "&Отмена", 0, endid-curid-1);
+    progr_dialog->setWindowTitle("Пожалуйста подождите");
+    progr_dialog->setMinimumDuration(0);
+
+    for (int i=curid; i<endid; i++) {
+        QString request = QString("get История[%1]").arg(QString::number(i));
+        QByteArray anw2 = port->write(request.toUtf8());
+        QString rq = "";
+
+        if (anw2.indexOf("error") > 0) {
+            rq = QString("INSERT INTO UNASSMHISTORY (OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, '%2', %3, '%4')")
+                    .arg(azsNum)
+                    .arg("00.00.00 00:00:00")
+                    .arg("-1")
+                    .arg("");
+        } else {
+            QString his_id = anw2.mid(anw2.indexOf("ID:")+3, 4);
+            his_id = his_id.mid(0, his_id.indexOf("\r"));
+
+            QString his_time = anw2.mid(anw2.indexOf("Время:")+12, 19);
+            his_time = QDateTime::fromString(his_time, "dd.MM.yyyy hh:mm:ss").toString("yyyy-MM-dd hh:mm:ss");
+
+            QString his_type = anw2.mid(anw2.indexOf("Тип:")+7, 4);
+            his_type = his_type.mid(0, his_type.indexOf("\r"));
+
+            QString his_data = anw2.mid(anw2.indexOf("Data:")+8);
+            his_data = his_data.left(his_data.length()-6);
+
+            rq = QString("INSERT INTO UNASSMHISTORY (OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, '%2', %3, '%4')")
+                .arg(azsNum)
+                .arg(his_time)
+                .arg(his_type)
+                .arg(his_data);
+        }
+
+        /*query->exec(rq);
+        if (query->lastError().isValid()) {
+            qDebug() << query->lastError().databaseText();
+        }*/
+        progr_dialog->setValue(i);
+        QCoreApplication::processEvents();
+        if (progr_dialog->wasCanceled()) {
+            break;
+        }
+    }
+    delete progr_dialog;
+
+    //запись на устройство кол-во считанных
+    //port->write(QString("run ЧтИстория:{Считано:%1}").arg(endid-1).toUtf8());
 }
 
 void MainWindow::updateObject() {

@@ -278,18 +278,15 @@
             <string>История</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_10">
-            <item row="2" column="0">
+            <item row="1" column="0">
              <widget class="QPushButton" name="pbGetHistory">
               <property name="text">
                <string>Получить</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QTableView" name="tableHistory"/>
-            </item>
             <item row="0" column="0">
-             <widget class="QTextBrowser" name="textBrowser"/>
+             <widget class="QTableView" name="tableHistory"/>
             </item>
            </layout>
           </widget>

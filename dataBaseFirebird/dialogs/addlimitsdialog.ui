@@ -114,16 +114,6 @@
     <string>Тип</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="leType">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>140</y>
-     <width>221</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QComboBox" name="cbFuels">
    <property name="geometry">
     <rect>
@@ -133,6 +123,46 @@
      <height>22</height>
     </rect>
    </property>
+  </widget>
+  <widget class="QComboBox" name="cbType">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>140</y>
+     <width>221</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>Лимит отключен</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Безлимитный</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Одноразовый, с заданным сроком и количеством</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Однодневный, возобновляемый</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Недельный, возобновляемый</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Месячный, возобновляемый</string>
+    </property>
+   </item>
   </widget>
  </widget>
  <resources/>

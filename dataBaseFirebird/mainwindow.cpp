@@ -568,7 +568,7 @@ void MainWindow::updateHistory() {
     setTableFormat(ui->tableHistory);
 }
 
-//TODO добавить графику на процесс
+#include <QProgressDialog>
 void MainWindow::getHistory() {
     port = new Port(port_settings);
 
@@ -586,7 +586,7 @@ void MainWindow::getHistory() {
     }
 
     QSqlQuery* query = new QSqlQuery(db);
-    QString statament = QString("SELECT max(id) FROM UNASSMHISTORY WHERE OBJECTID=%1").arg(azsNum);
+    QString statament = QString("SELECT max(hisid) FROM UNASSMHISTORY WHERE OBJECTID=%1").arg(azsNum);
     query->exec(statament);
     query->next();
     int curid = query->value(0).toInt();
@@ -606,7 +606,7 @@ void MainWindow::getHistory() {
         return;
     }
 
-    progr_dialog = new QProgressDialog("Считывание истории", "&Отмена", 0, endid-curid-1);
+    QProgressDialog *progr_dialog = new QProgressDialog("Считывание истории", "&Отмена", 0, endid-curid-1);
     progr_dialog->setWindowTitle("Пожалуйста подождите");
     progr_dialog->setMinimumDuration(0);
 
@@ -616,7 +616,8 @@ void MainWindow::getHistory() {
         QString rq = "";
 
         if (anw2.indexOf("error") > 0) {
-            rq = QString("INSERT INTO UNASSMHISTORY (OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, '%2', %3, '%4')")
+            rq = QString("INSERT INTO UNASSMHISTORY (HISID, OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, %2, '%3', %4, '%5')")
+                    .arg(i)
                     .arg(azsNum)
                     .arg("00.00.00 00:00:00")
                     .arg("-1")
@@ -634,17 +635,18 @@ void MainWindow::getHistory() {
             QString his_data = anw2.mid(anw2.indexOf("Data:")+8);
             his_data = his_data.left(his_data.length()-6);
 
-            rq = QString("INSERT INTO UNASSMHISTORY (OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, '%2', %3, '%4')")
+            rq = QString("INSERT INTO UNASSMHISTORY (HISID, OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, %2, '%3', %4, '%5')")
+                .arg(i)
                 .arg(azsNum)
                 .arg(his_time)
                 .arg(his_type)
                 .arg(his_data);
         }
 
-        /*query->exec(rq);
+        query->exec(rq);
         if (query->lastError().isValid()) {
             qDebug() << query->lastError().databaseText();
-        }*/
+        }
         progr_dialog->setValue(i);
         QCoreApplication::processEvents();
         if (progr_dialog->wasCanceled()) {
@@ -654,7 +656,8 @@ void MainWindow::getHistory() {
     delete progr_dialog;
 
     //запись на устройство кол-во считанных
-    //port->write(QString("run ЧтИстория:{Считано:%1}").arg(endid-1).toUtf8());
+    port->write(QString("run ЧтИстория:{Считано:%1}").arg(endid-1).toUtf8());
+    updateHistory();
 }
 
 void MainWindow::updateObject() {

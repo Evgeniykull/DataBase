@@ -11,16 +11,17 @@ AddLimitsDialog::AddLimitsDialog(QWidget *parent) :
     connect(ui->buttonBox, SIGNAL(rejected()), SLOT(close()));
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
     getFuelMap();
+    getLimitsType();
 }
 
 AddLimitsDialog::AddLimitsDialog(int limits_id, QSqlDatabase db, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AddLimitsDialog)
 {
+    ui->setupUi(this);
     limitsId = limits_id;
     dataBase = db;
-
-    ui->setupUi(this);
+    getLimitsType();
     connect(ui->buttonBox, SIGNAL(rejected()), SLOT(close()));
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
     getFuelMap();
@@ -36,7 +37,7 @@ AddLimitsDialog::AddLimitsDialog(int limits_id, QSqlDatabase db, QWidget *parent
     ui->cbFuels->setCurrentText(fuel_map->value(rec.value(2).toInt()));
     ui->leValue->setText(rec.value("valuel").toString());
     ui->leDays->setText(rec.value("days").toString());
-    ui->leType->setText(rec.value("typed").toString());
+    ui->cbType->setCurrentText(lim_type->key(rec.value("typed").toString()));
 }
 
 AddLimitsDialog::~AddLimitsDialog()
@@ -49,7 +50,7 @@ void AddLimitsDialog::onButtonOkClick() {
     int fuel_id = fuel_map->key(fuel_name);
     QString value = ui->leValue->text();
     QString days = ui->leDays->text();
-    QString type = ui->leType->text();
+    QString type = lim_type->value(ui->cbType->currentText());
 
     if (limitsId > -1) {
         emit onOkClick(limitsId, QString::number(fuel_id), value, days, type);
@@ -72,4 +73,14 @@ void AddLimitsDialog::getFuelMap() {
         ui->cbFuels->insertItem(i, query->record().value("name").toString());
         i += 1;
     }
+}
+
+void AddLimitsDialog::getLimitsType() {
+    lim_type = new QMap<QString, QString>;
+    lim_type->insert("Лимит отключен", "0");
+    lim_type->insert("Безлимитный", "1");
+    lim_type->insert("Одноразовый, с заданным сроком и количеством", "2");
+    lim_type->insert("Однодневный, возобновляемый", "3");
+    lim_type->insert("Недельный, возобновляемый", "4");
+    lim_type->insert("Месячный, возобновляемый", "5");
 }

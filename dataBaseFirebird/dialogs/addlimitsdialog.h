@@ -25,12 +25,14 @@ signals:
 private slots:
     void onButtonOkClick();
     void getFuelMap();
+    void getLimitsType();
 
 private:
     Ui::AddLimitsDialog *ui;
     int limitsId = -1;
     QSqlDatabase dataBase;
     QMap<int, QString>* fuel_map;
+    QMap <QString, QString>* lim_type;
 };
 
 #endif // ADDLIMITSDIALOG_H

@@ -7,17 +7,17 @@
     <x>0</x>
     <y>0</y>
     <width>351</width>
-    <height>219</height>
+    <height>184</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Колонка</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>184</y>
+     <y>150</y>
      <width>331</width>
      <height>32</height>
     </rect>
@@ -33,7 +33,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>72</y>
+     <y>38</y>
      <width>101</width>
      <height>16</height>
     </rect>
@@ -46,7 +46,7 @@
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>100</y>
+     <y>66</y>
      <width>221</width>
      <height>20</height>
     </rect>
@@ -56,7 +56,7 @@
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>70</y>
+     <y>36</y>
      <width>221</width>
      <height>20</height>
     </rect>
@@ -72,7 +72,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>100</y>
+     <y>66</y>
      <width>101</width>
      <height>16</height>
     </rect>
@@ -94,21 +94,11 @@
     <string>Введите данные для новой колонки</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="leTankId">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>130</y>
-     <width>221</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_4">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>130</y>
+     <y>96</y>
      <width>101</width>
      <height>16</height>
     </rect>
@@ -121,7 +111,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>160</y>
+     <y>126</y>
      <width>101</width>
      <height>16</height>
     </rect>
@@ -134,13 +124,29 @@
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>160</y>
+     <y>126</y>
      <width>221</width>
      <height>20</height>
     </rect>
    </property>
   </widget>
+  <widget class="QComboBox" name="cbTankId">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>96</y>
+     <width>221</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
  </widget>
+ <tabstops>
+  <tabstop>leDispsId</tabstop>
+  <tabstop>leAddress</tabstop>
+  <tabstop>cbTankId</tabstop>
+  <tabstop>leWorkFlag</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

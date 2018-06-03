@@ -19,8 +19,8 @@ Port::Port(QWidget *parent) :
     connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(rewriteSettings()));
 
     connect(ui->pbSettings, SIGNAL(clicked(bool)), SLOT(onSettingsClick()));
-    connect(ui->pbSetAccess, SIGNAL(clicked(bool)), SLOT(onChangeAccessClick()));
-    connect(ui->pbUpdateAccess, SIGNAL(clicked(bool)), SLOT(onAccessUpdateClick()));
+    //connect(ui->pbSetAccess, SIGNAL(clicked(bool)), SLOT(onChangeAccessClick()));
+    //connect(ui->pbUpdateAccess, SIGNAL(clicked(bool)), SLOT(onAccessUpdateClick()));
 }
 
 Port::Port(int port_addr, QWidget *parent) :
@@ -35,8 +35,8 @@ Port::Port(int port_addr, QWidget *parent) :
     connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(rewriteSettings()));
 
     connect(ui->pbSettings, SIGNAL(clicked(bool)), SLOT(onSettingsClick()));
-    connect(ui->pbSetAccess, SIGNAL(clicked(bool)), SLOT(onChangeAccessClick()));
-    connect(ui->pbUpdateAccess, SIGNAL(clicked(bool)), SLOT(onAccessUpdateClick()));
+    //connect(ui->pbSetAccess, SIGNAL(clicked(bool)), SLOT(onChangeAccessClick()));
+    //connect(ui->pbUpdateAccess, SIGNAL(clicked(bool)), SLOT(onAccessUpdateClick()));
 }
 
 Port::Port(PortSettings *ps, QWidget *parent) :
@@ -89,7 +89,7 @@ void Port::rewriteSettings(int addr) {
 }
 
 void Port::onChangeAccessClick() {
-    openPort();
+    /*openPort();
     if (!port->isOpen()) {
         QMessageBox::information(0, QObject::tr("Невозможно записать на устройство"), QObject::tr("Порт закрыт"));
         return;
@@ -129,30 +129,12 @@ void Port::onChangeAccessClick() {
         QMessageBox::information(0, QObject::tr("Изменение режима доступа"), QString(req_data));
     }
 
-    closePort();
+    closePort();*/
 }
 
-bool Port::changeAccess(int level) {
-    openPort();
-    if (!port->isOpen()) {
-        QMessageBox::information(0, QObject::tr("Невозможно записать на устройство"), QObject::tr("Порт закрыт"));
-        return false;
-    }
-
+bool Port::changeAccess(int level,QByteArray passwd) {
     QByteArray req_acc_level = "ReqAccLevel:" + QByteArray::number(level);
-    QByteArray alpassword = "ALPassword:";
-
-    if (level > 0) {
-        QString password = "";
-        if (level == 1) {
-            password = "12345";
-        } else if(level == 2) {
-            password = "27182";
-        }
-
-        alpassword += password.toUtf8();
-    }
-
+    QByteArray alpassword = "ALPassword:"+passwd;
     QByteArray req = "run AccessCmd:{\n" + req_acc_level + "\n";
     if (level) {
         req += alpassword;
@@ -162,21 +144,27 @@ bool Port::changeAccess(int level) {
     QByteArray req_data = writeData(req);
     req_data = writeData("get AccessCmd");
 
-    int pos = req_data.indexOf("ALMessage:");
-    QString answ_message = QString(req_data).mid(pos + 11);
-    pos = answ_message.indexOf('"');
-    answ_message = answ_message.mid(0, pos);
-
-    if (answ_message != "Ok") {
-        QMessageBox::information(0, QObject::tr("Изменение режима доступа"), QString(req_data));
+    int pos = req_data.indexOf("CurAccLevel:")+12;
+    while ((req_data[pos]<'0')&&(pos<req_data.length())) pos++;
+    int curlev=(req_data[pos]-'0');
+    if (curlev!=level) {
+      QMessageBox::information(0, QObject::tr("Изменение режима доступа"), QString(req_data));
+      return 0;
     }
-
-    closePort();
-    return answ_message == "Ok";
+    return 1;
+// Как было - не правильно
+//    QString answ_message = QString(req_data).mid(pos + 11);
+//    pos = answ_message.indexOf('"');
+//    answ_message = answ_message.mid(0, pos);
+//
+//    if (answ_message != "Ok") {
+//        QMessageBox::information(0, QObject::tr("Изменение режима доступа"), QString(req_data));
+//    }
+//    return answ_message == "Ok";
 }
 
 void Port::onAccessUpdateClick() {
-    openPort();
+    /*openPort();
     if (!port->isOpen()) {
         QMessageBox::information(0, QObject::tr("Невозможно записать на устройство"), QObject::tr("Порт закрыт"));
         return;
@@ -187,15 +175,16 @@ void Port::onAccessUpdateClick() {
     QString answ_message = QString(req_data).mid(pos + 12, 1);
 
     ui->cbAccess->setCurrentIndex(answ_message.toInt() + 1);
-    closePort();
+    closePort();*/
 }
 
-void Port::openPort()
+int Port::openPort()
 {
+  int result=0;
     //writePortSettings(); //просто перезаписать настройки -- достаточно один раз делать! либо при их изменений
     port->setPortName(sett.name);
     if(port->isOpen()) {
-        return;
+        return 1;
     }
     if (port->open(QIODevice::ReadWrite)) {
         if (port->setBaudRate(sett.baudRate)
@@ -204,7 +193,8 @@ void Port::openPort()
                 && port->setStopBits(sett.stopBits)
                 && port->setFlowControl(sett.flowControl)) {
             if (port->isOpen()) {
-                ui->lblColour->setStyleSheet("QLabel { background-color : green; }");
+               ui->lblColour->setStyleSheet("QLabel { background-color : green; }");
+               result=1;
             }
         } else {
             port->close();
@@ -214,6 +204,7 @@ void Port::openPort()
         port->close();
         ui->lblColour->setStyleSheet("QLabel { background-color : red; }");
     }
+    return result;
 }
 
 void Port::closePort()
@@ -224,7 +215,23 @@ void Port::closePort()
     transfer_data = false;
 }
 
-void Port::sendData(QByteArray data) {
+// Открывает порт (возвращает 1 если всё нормально)
+bool Port::StartComm() {
+  openPort();
+  if (!port->isOpen()) {
+      QMessageBox::information(0, QObject::tr("Невозможно записать на устройство"), QObject::tr("Порт закрыт"));
+      return false;
+  }
+  return true;
+};
+
+// Закрывает порт
+void Port::EndComm() {
+  closePort();
+}
+
+
+/*void Port::sendData(QByteArray data) {
     QThread *thread = new QThread;
     treadWorker *worker = new treadWorker();
     worker->setTransferParams(data, port, sett.addres.toInt(), sett.byteOnPackage);
@@ -233,7 +240,7 @@ void Port::sendData(QByteArray data) {
     connect(worker, SIGNAL(finished(QByteArray)), this, SLOT(endTransmitData(QByteArray)));
     worker->moveToThread(thread);
     thread->start();
-}
+}*/
 
 QByteArray Port::getPortDataOnly(int len) {
   QByteArray qba;
@@ -295,6 +302,109 @@ void Port::putPortData(QByteArray tr_data) {
   port->write(tr_data);
 }
 
+QByteArray Port::write(QByteArray text) {
+  return intWriteData(text);
+}
+
+QByteArray Port::writeData(QByteArray text) {
+  return intWriteData(text);
+}
+
+void Port::Add_hCRC(QByteArray * data) {
+  uint n;
+  ushort crc = 0xFFFF;
+  ushort dt;
+  uint len;
+  len=data->length();
+  for (n = 1; n < len; n++) {
+      dt=(ushort)(*data)[n];
+      dt&=0xFF;
+      crc += dt*44111;
+      crc = crc ^ (crc >> 8);
+  }
+  data->append(crc&0xFF);
+  data->append((crc>>8)&0xFF);
+}
+
+int Port::Check_hCRC(QByteArray data) {
+  uint n;
+  ushort crc = 0xFFFF;
+  ushort crc2;
+  ushort dt;
+  uint len;
+  len=data.length()-2;
+  for (n = 1; n < len; n++) {
+      dt=(ushort)data[n];
+      dt&=0xFF;
+      crc += dt*44111;
+      crc = crc ^ (crc >> 8);
+  }
+  crc2=((ushort)data[n+1])&0x00FF;
+  crc2<<=8;
+  crc2+=((ushort)data[n])&0x00FF;
+  return crc==crc2;
+}
+
+QByteArray Port::intWriteData(QByteArray text) {
+  unsigned char addres = sett.addres.toInt();
+  int allerrnum=0;
+  int n;
+  QByteArray senddata;
+  QByteArray rd_data;
+//  QByteArray getdata;
+// Это здесь делать некорректно, логика неправильная - и тем более возвращать пустую строку
+  if (transfer_data) {
+    errcode=0x89;  // Коды ошибок нужно делать разные, чтобы было понятно что к чему (хотя бы нам, а лучше и пользователю)
+    return "";
+  } else {
+    transfer_data = true;
+  }
+// Перекодировали в CP1251 - хорошо
+  QTextCodec *codec1 = QTextCodec::codecForName( "CP1251" );
+  text = codec1->fromUnicode(QString(text));
+//Подготавливаем данные - при пустой строке возвращаем пустую строку - логично.
+  QByteArray data = text;
+  int data_len = data.length();
+  if (data_len == 0) {
+    transfer_data=false;
+    return "";
+  }
+  do {
+// формируем и передаем пакет запроса
+    senddata.clear();
+    senddata.append(0xB5);
+    senddata.append(addres);
+    senddata.append(data_len&0x00FF);
+    senddata.append((data_len>>8)&0xFF);
+    senddata.append(data);
+    Add_hCRC(&senddata);
+    putPortData(senddata);
+// Процесс пошел. Ждём ответа
+    rd_data=getPortData(0xB5,4);
+    if (rd_data.length()) {
+//      getdata=rd_data;
+      rd_data.append(getPortDataOnly((int)rd_data[2]+((int)(rd_data[3])*256)+2));
+      if (Check_hCRC(rd_data)) {
+        if ((((unsigned char)(rd_data[1]&0x7F)==addres)||(addres==0))&&(rd_data[1]&0x80)) {
+          rd_data.remove(0,4);
+          rd_data.remove(rd_data.length()-2,2);
+          errcode=0;
+          transfer_data=false;
+          rd_data.append((char)0);
+          QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
+          QString data_1 = codec->toUnicode(rd_data);  //то, что пришло в формате читаемой строки
+          return QByteArray(data_1.toStdString().c_str());
+        }
+      }
+    }
+    allerrnum++;
+  } while (allerrnum<3);
+  errcode=0x88;
+  transfer_data=false;
+  return "";
+}
+
+/* Совершенно не понял зачем две функции и что они делают, и чем различаются
 QByteArray Port::write(QByteArray text) {
     openPort();
     QTextCodec *codec1 = QTextCodec::codecForName( "CP1251" );
@@ -688,6 +798,7 @@ QByteArray Port::writeData(QByteArray text)
     closePort();
     return "";
 }
+*/
 
 /*
 //to do

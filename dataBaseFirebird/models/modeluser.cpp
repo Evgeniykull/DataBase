@@ -40,6 +40,11 @@ void ModelUser::deleteUsers(int user_id) {
         mBx->setText(query->lastError().databaseText());
         mBx->show();
     }
+
+    QSqlQuery* query2 = new QSqlQuery(data_base);
+    QString statament2 = QString("DELETE FROM limits WHERE userid=%1").arg(QString::number(user_id));
+    query2->exec(statament2);
+
     emit needUpdate();
 }
 

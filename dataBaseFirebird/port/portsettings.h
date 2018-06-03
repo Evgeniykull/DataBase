@@ -18,7 +18,7 @@ class PortSettings : public QDialog
 public:
     explicit PortSettings(QWidget *parent = 0);
     explicit PortSettings(int addr, QWidget *parent = 0);
-    explicit PortSettings(QString,QString,QString,QString,QString,QString,QString,QString,QWidget *parent = 0);
+    explicit PortSettings(QString,QString,QString,QString,QString,QString,QWidget *parent = 0);
 
     ~PortSettings();
     Settings SettingsPort;

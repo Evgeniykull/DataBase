@@ -34,7 +34,7 @@ PortSettings::PortSettings(int addr, QWidget *parent) :
     ui->leAddres->setText(QString::number(addr));
 }
 
-PortSettings::PortSettings(QString ad, QString br, QString bop, QString db, QString fc, QString na, QString pa, QString sb, QWidget *parent) :
+PortSettings::PortSettings(QString ad, QString br, QString db, QString na, QString pa, QString sb, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::PortSettings)
 {
@@ -50,9 +50,7 @@ PortSettings::PortSettings(QString ad, QString br, QString bop, QString db, QStr
     ui->cbDataBist->setCurrentText(db);
     ui->cbPairity->setCurrentText(pa);
     ui->cbStopBits->setCurrentText(sb);
-    ui->cbFlowControl->setCurrentText(fc);
     ui->leAddres->setText(ad);
-    ui->leByteInPacket->setText(bop);
 
 
     SettingsPort.name = ui->cbPortName->itemText(ui->cbPortName->currentIndex());
@@ -60,9 +58,7 @@ PortSettings::PortSettings(QString ad, QString br, QString bop, QString db, QStr
     SettingsPort.dataBits = (QSerialPort::DataBits) ui->cbDataBist->itemText(ui->cbDataBist->currentIndex()).toInt();
     SettingsPort.parity = (QSerialPort::Parity) ui->cbPairity->itemText(ui->cbPairity->currentIndex()).toInt();
     SettingsPort.stopBits = (QSerialPort::StopBits) ui->cbStopBits->itemText(ui->cbStopBits->currentIndex()).toInt();
-    SettingsPort.flowControl = (QSerialPort::FlowControl) ui->cbFlowControl->itemText(ui->cbFlowControl->currentIndex()).toInt();
     SettingsPort.addres = ui->leAddres->text();
-    SettingsPort.byteOnPackage = ui->leByteInPacket->text().toInt();
 }
 
 PortSettings::~PortSettings()
@@ -95,10 +91,6 @@ void PortSettings::addValueToSettings() {
     ui->cbStopBits->addItem(QLatin1String("1.5"), QSerialPort::OneAndHalfStop);
     #endif
     ui->cbStopBits->addItem(QLatin1String("2"), QSerialPort::TwoStop);
-    //fill flow control
-    ui->cbFlowControl->addItem(QLatin1String("None"), QSerialPort::NoFlowControl);
-    ui->cbFlowControl->addItem(QLatin1String("RTS/CTS"), QSerialPort::HardwareControl);
-    ui->cbFlowControl->addItem(QLatin1String("XON/XOFF"), QSerialPort::SoftwareControl);
 }
 
 void PortSettings::checkCustomBaudRatePolicy(int idx) {
@@ -139,16 +131,8 @@ void PortSettings::getPortSettingsFromFile() {
             ui->cbStopBits->setCurrentIndex(ui->cbStopBits->findText(list[1]));
             continue;
         }
-        if (list[0] == "FlowControl" && ui->cbFlowControl->findText(list[1]) + 1) {
-            ui->cbFlowControl->setCurrentIndex(ui->cbFlowControl->findText(list[1]));
-            continue;
-        }
         if (list[0] == "Addres") {
             ui->leAddres->setText(list[1]);
-            continue;
-        }
-        if (list[0] == "ByteInPacket") {
-            ui->leByteInPacket->setText(list[1]);
             continue;
         }
     }
@@ -159,9 +143,7 @@ void PortSettings::getPortSettingsFromFile() {
     SettingsPort.dataBits = (QSerialPort::DataBits) ui->cbDataBist->itemText(ui->cbDataBist->currentIndex()).toInt();
     SettingsPort.parity = (QSerialPort::Parity) ui->cbPairity->itemText(ui->cbPairity->currentIndex()).toInt();
     SettingsPort.stopBits = (QSerialPort::StopBits) ui->cbStopBits->itemText(ui->cbStopBits->currentIndex()).toInt();
-    SettingsPort.flowControl = (QSerialPort::FlowControl) ui->cbFlowControl->itemText(ui->cbFlowControl->currentIndex()).toInt();
     SettingsPort.addres = ui->leAddres->text();
-    SettingsPort.byteOnPackage = ui->leByteInPacket->text().toInt();
 
     isChanged = true;
 }
@@ -176,9 +158,7 @@ void PortSettings::onOkClick2() {
     SettingsPort.dataBits = (QSerialPort::DataBits) ui->cbDataBist->itemText(ui->cbDataBist->currentIndex()).toInt();
     SettingsPort.parity = (QSerialPort::Parity) ui->cbPairity->itemText(ui->cbPairity->currentIndex()).toInt();
     SettingsPort.stopBits = (QSerialPort::StopBits) ui->cbStopBits->itemText(ui->cbStopBits->currentIndex()).toInt();
-    SettingsPort.flowControl = (QSerialPort::FlowControl) ui->cbFlowControl->itemText(ui->cbFlowControl->currentIndex()).toInt();
     SettingsPort.addres = ui->leAddres->text();
-    SettingsPort.byteOnPackage = ui->leByteInPacket->text().toInt();
 
     emit settingsIsChanged();
 }
@@ -189,7 +169,6 @@ void PortSettings::onOkClick() {
     SettingsPort.dataBits = (QSerialPort::DataBits) ui->cbDataBist->itemText(ui->cbDataBist->currentIndex()).toInt();
     SettingsPort.parity = (QSerialPort::Parity) ui->cbPairity->itemText(ui->cbPairity->currentIndex()).toInt();
     SettingsPort.stopBits = (QSerialPort::StopBits) ui->cbStopBits->itemText(ui->cbStopBits->currentIndex()).toInt();
-    SettingsPort.flowControl = (QSerialPort::FlowControl) ui->cbFlowControl->itemText(ui->cbFlowControl->currentIndex()).toInt();
     SettingsPort.addres = ui->leAddres->text();
 
     bool ok;
@@ -202,9 +181,7 @@ void PortSettings::onOkClick() {
     port_settings->setValue("dataBits", ui->cbDataBist->itemText(ui->cbDataBist->currentIndex()));
     port_settings->setValue("pairity", ui->cbPairity->itemText(ui->cbPairity->currentIndex()));
     port_settings->setValue("stopBits", ui->cbStopBits->itemText(ui->cbStopBits->currentIndex()));
-    port_settings->setValue("flowControl", ui->cbFlowControl->itemText(ui->cbFlowControl->currentIndex()));
     port_settings->setValue("address", ui->leAddres->text());
-    port_settings->setValue("byteInPacket", ui->leByteInPacket->text());
     port_settings->endGroup();
     port_settings->sync();
 
@@ -218,9 +195,7 @@ void PortSettings::onOkClick() {
     out << "DataBits=" << ui->cbDataBist->itemText(ui->cbDataBist->currentIndex()) << "\n";
     out << "Pairity=" << ui->cbPairity->itemText(ui->cbPairity->currentIndex()) << "\n";
     out << "StopBits=" << ui->cbStopBits->itemText(ui->cbStopBits->currentIndex()) << "\n";
-    out << "FlowControl=" << ui->cbFlowControl->itemText(ui->cbFlowControl->currentIndex()) << "\n";
     out << "Addres=" << ui->leAddres->text() << "\n";
-    out << "ByteInPacket=" << ui->leByteInPacket->text() << "\n";
     file.close();
 
     isChanged = true;

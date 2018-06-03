@@ -14,7 +14,7 @@ ModelTanks::ModelTanks(QSqlDatabase db, QString azsNum, QObject *parent) : QObje
 }
 
 void ModelTanks::addTanks() {
-    AddTanksDialog * add_tank = new AddTanksDialog();
+    AddTanksDialog * add_tank = new AddTanksDialog(data_base);
     add_tank->show();
     connect(add_tank, SIGNAL(onOkClick(int,int,QString)), SLOT(finishAddTanks(int,int,QString)));
 }
@@ -78,7 +78,7 @@ void ModelTanks::finishEditTanks(int id, int fuelId, int addr, QString comment) 
 QList<QString> ModelTanks::configureTanks() {
     QList<QString> *fnsh = new QList<QString>;
     QSqlQuery* query = new QSqlQuery(data_base);
-    QString statament = "SELECT * FROM tanks";
+    QString statament = "SELECT ID,FUELID,SENDADDR FROM tanks";
     query->exec(statament);
 
     int i = 0;

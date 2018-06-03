@@ -15,7 +15,7 @@ ModelPoints::ModelPoints(QSqlDatabase db, QString azsNum, QObject *parent) : QOb
 }
 
 void ModelPoints::addPoint() {
-    AddPointsDialog * add_point = new AddPointsDialog();
+    AddPointsDialog * add_point = new AddPointsDialog(azs_num, data_base);
     add_point->show();
     connect(add_point, SIGNAL(onOkClick(int,int,int,int)), SLOT(finishAddPoint(int,int,int,int)));
 }
@@ -35,7 +35,7 @@ void ModelPoints::deletePoint(int point_id) {
 }
 
 void ModelPoints::editPoint(int point_id) {
-    AddPointsDialog * add_point = new AddPointsDialog(point_id, data_base);
+    AddPointsDialog * add_point = new AddPointsDialog(azs_num, point_id, data_base);
     add_point->show();
     connect(add_point, SIGNAL(onOkClick(int,int,int,int,int)), SLOT(finishEditPoint(int,int,int,int,int)));
 }
@@ -128,7 +128,7 @@ QList<QString> ModelPoints::configurePoints() {
     while (p < 12) {
         QString data = QString("set Установки.Колонки[%1]:{Рукава[]:[").arg(QString::number(p));
         for (int i=0; i<5; i++) {
-            data+= "{Работа:%1 Адрес:%2 Резервуар:%3},";
+            data+= "{Работа:0 Адрес:0 Резервуар:0},";
         }
         data = data.mid(0, data.length()-1);
         data.append("]}");

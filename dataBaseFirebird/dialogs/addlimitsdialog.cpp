@@ -2,6 +2,7 @@
 #include "ui_addlimitsdialog.h"
 #include <QSqlQuery>
 #include <QSqlRecord>
+#include <QDebug>
 
 AddLimitsDialog::AddLimitsDialog(QWidget *parent) :
     QDialog(parent),
@@ -27,16 +28,18 @@ AddLimitsDialog::AddLimitsDialog(int limits_id, QSqlDatabase db, QWidget *parent
     getFuelMap();
 
     QSqlQuery* query = new QSqlQuery(dataBase);
-    QString statament = "SELECT * FROM limits WHERE id=";
-    statament.append(QString::number(limits_id));
+    //не удалось заменить
+    QString statament = QString("SELECT fuelid, valuel, daysd, typed FROM limits WHERE id=%1").arg(QString::number(limits_id));
+    qDebug() << statament;
     query->exec(statament);
     query->next();
 
     QSqlRecord rec = query->record();
+    qDebug() << rec;
 
-    ui->cbFuels->setCurrentText(fuel_map->value(rec.value(2).toInt()));
+    ui->cbFuels->setCurrentText(fuel_map->value(rec.value("fuelid").toInt()));
     ui->leValue->setText(rec.value("valuel").toString());
-    ui->leDays->setText(rec.value("days").toString());
+    ui->leDays->setText(rec.value("daysd").toString());
     ui->cbType->setCurrentText(lim_type->key(rec.value("typed").toString()));
 }
 

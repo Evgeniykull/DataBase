@@ -26,18 +26,17 @@ AddFuelsDialog::AddFuelsDialog(int fuel_id, QSqlDatabase db, QWidget *parent) :
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
 
     QSqlQuery* query = new QSqlQuery(db);
-    QString statament = "SELECT * FROM fuels WHERE fueldid=";
+    QString statament = "SELECT name, viewname, price FROM fuels WHERE fueldid=";
     statament.append(QString::number(fuel_id));
     query->exec(statament);
     query->next();
 
     QSqlRecord rec = query->record();
 
-    ui->leName->setText(rec.value(1).toString());
-    ui->leViewName->setText(rec.value(2).toString());
-    ui->lePrice->setText(rec.value(3).toString());
+    ui->leName->setText(rec.value("name").toString());
+    ui->leViewName->setText(rec.value("viewname").toString());
+    ui->lePrice->setText(rec.value("price").toString());
 }
-
 
 AddFuelsDialog::~AddFuelsDialog()
 {

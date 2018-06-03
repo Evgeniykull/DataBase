@@ -3,13 +3,15 @@
 #include <QSqlQuery>
 #include <QSqlRecord>
 #include <QSqlField>
+#include <QMessageBox>
 #include <QDebug>
 
-AddTanksDialog::AddTanksDialog(QWidget *parent) :
+AddTanksDialog::AddTanksDialog(QSqlDatabase db, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AddTanksDialog)
 {
     ui->setupUi(this);
+    dataBase = db;
     connect(ui->buttonBox, SIGNAL(rejected()), SLOT(close()));
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
     getFuelMap();
@@ -20,23 +22,30 @@ AddTanksDialog::AddTanksDialog(int tank_id, QSqlDatabase db, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::AddTanksDialog)
 {
+    ui->setupUi(this);
     tankId = tank_id;
     dataBase = db;
 
-    ui->setupUi(this);
     connect(ui->buttonBox, SIGNAL(rejected()), SLOT(close()));
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
     getFuelMap();
 
+    if (fuel_map->size() <= 0) {
+        QMessageBox *mess = new QMessageBox();
+        mess->setWindowTitle("Добавление резервуара");
+        mess->setText("Добавте сначала топлива");
+        mess->exec();
+    }
+
     QSqlQuery* query = new QSqlQuery(db);
-    QString statament = QString("SELECT * FROM tanks WHERE id=%1").arg(QString::number(tank_id));
+    QString statament = QString("SELECT fuelid, sendaddr, comment FROM tanks WHERE id=%1").arg(QString::number(tank_id));
     query->exec(statament);
     query->next();
 
     QSqlRecord rec = query->record();
-    ui->cbFuels->setCurrentText(fuel_map->value(rec.value(1).toInt()));
-    ui->leAdress->setText(rec.value(2).toString());
-    ui->leComment->setText(rec.value(4).toString());
+    ui->cbFuels->setCurrentText(fuel_map->value(rec.value("fuelid").toInt()));
+    ui->leAdress->setText(rec.value("sendaddr").toString());
+    ui->leComment->setText(rec.value("comment").toString());
 }
 
 AddTanksDialog::~AddTanksDialog()

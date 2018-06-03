@@ -42,6 +42,7 @@ private slots:
     void onActDictionaryClick();
     void onActConnectClick();
     void onConnectClick();
+    void onActAboutClick();
 
     void updateUsers();
     void onAddUsersClick();
@@ -103,7 +104,7 @@ private slots:
     QMap<int, QJsonObject>* getUsersOnDevice(QVector<int> users_ids);
     void timerEnd();
 
-private:
+  private:
     Ui::MainWindow *ui;
     QLabel *status_bar;
     QLabel *port_status;

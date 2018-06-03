@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>355</width>
-    <height>100</height>
+    <height>50</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>0</width>
-    <height>100</height>
+    <height>50</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -57,51 +57,6 @@
     <widget class="QPushButton" name="pbSettings">
      <property name="text">
       <string>Настройки</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="3">
-    <widget class="QLabel" name="lblAccess">
-     <property name="text">
-      <string>Выберите уровень доступа:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="3">
-    <widget class="QComboBox" name="cbAccess">
-     <item>
-      <property name="text">
-       <string/>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Рабочий</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Административный</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Заводской</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="2" column="3">
-    <widget class="QPushButton" name="pbSetAccess">
-     <property name="text">
-      <string>Установить</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="4">
-    <widget class="QPushButton" name="pbUpdateAccess">
-     <property name="text">
-      <string>Обновить</string>
      </property>
     </widget>
    </item>

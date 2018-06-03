@@ -61,12 +61,14 @@ void MainWindow::renderToolbar() {
     menu_bar->addAction(ui->actUser);
     menu_bar->addAction(ui->actDirectory);
     menu_bar->addAction(ui->actConnect);
+    menu_bar->addAction(ui->actAbout);
     menu_bar->setExclusive(true);
     ui->mainToolBar->addActions(menu_bar->actions());
 
     connect(ui->actUser, SIGNAL(triggered(bool)), SLOT(onActUserClick()));
     connect(ui->actDirectory, SIGNAL(triggered(bool)), SLOT(onActDictionaryClick()));
     connect(ui->actConnect, SIGNAL(triggered(bool)), SLOT(onActConnectClick()));
+    connect(ui->actAbout, SIGNAL(triggered(bool)), SLOT(onActAboutClick()));
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), SLOT(currentTabChanged(int)));
     connect(ui->pbAddUser, SIGNAL(clicked(bool)), SLOT(onAddUsersClick()));
@@ -174,6 +176,12 @@ void MainWindow::readSettings() {
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
+// Временно
+
+    event->accept();
+    return;
+
+
     writeSettings();
     QMessageBox::StandardButton resBtn = QMessageBox::question( this, "dataBaseFirebird",
        "Вы уверены, что хотите выйти?\n",
@@ -254,6 +262,10 @@ void MainWindow::onActConnectClick() {
     ui->tabWidget->setCurrentIndex(2);
 }
 
+void MainWindow::onActAboutClick() {
+    ui->tabWidget->setCurrentIndex(3);
+}
+
 void MainWindow::onConnectClick() {
     db = QSqlDatabase::addDatabase("QIBASE");
     QString path = ui->lePath->text().isEmpty() ? "TESTBASE.FDB" : ui->lePath->text();
@@ -281,15 +293,17 @@ void MainWindow::onConnectClick() {
     }
 }
 
-void setTableFormat(QTableView *tab)
+void setTableFormat(QTableView *tab, int autoresize = 1)
 {
     tab->setAlternatingRowColors(true);         // Подсветка строк разными цветами
-    tab->resizeRowsToContents();
-    tab->resizeColumnsToContents();
+    if (autoresize) {
+        tab->resizeRowsToContents();
+        tab->resizeColumnsToContents();
+        tab->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    }
     tab->setSortingEnabled(true);               // Сортировка таблицы
     tab->sortByColumn(1,Qt::AscendingOrder);    // Порядок сортировки по умолчанию
     tab->setColumnHidden(0, true);              // Скрываем колонку с индексом
-    tab->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 }
 
 void MainWindow::updateUsers() {
@@ -565,13 +579,16 @@ void MainWindow::updateHistory() {
     model_history->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model_history->select();
     ui->tableHistory->setModel(model_history);
-    setTableFormat(ui->tableHistory);
+    setTableFormat(ui->tableHistory, 0);
+    ui->tableHistory->setColumnHidden(1, true);
+    ui->tableHistory->setColumnHidden(2, true);
+    ui->tableHistory->setColumnWidth(5, 500);
 }
 
 #include <QProgressDialog>
 void MainWindow::getHistory() {
     port = new Port(port_settings);
-
+    if (!port->StartComm()) return;
     //синхронизируем время
     QByteArray anw1 = port->write("get Состояние.Время");
     QString dev_time = anw1.mid(anw1.indexOf("Время:")+12, 19);
@@ -591,6 +608,20 @@ void MainWindow::getHistory() {
     query->next();
     int curid = query->value(0).toInt();
     if (curid <= 0) {
+
+//// ТАК ДЕЛАТЬ НЕЛЬЗЯ!!!
+/// А что будет, если start будет равно значению 2857345???
+/// Нужно один раз написать функцию поиска числа, раз уж ты не разбираешь JSON,
+/// и везде её использовать
+/// Функция должна работать ОБЯЗАТЕЛЬНО следующим образом:
+/// - с заданной позиции перебираем символы, пока не найдем первое число
+/// - фиксируем эту позицию как начало числа
+/// - перебирам символы дальше, пока число не кончится
+/// - фиксируем эту позицию как окончание числа
+/// - всё внутри - число.
+/// Это работает только для ЦЕЛЫХ ПОЛОЖИТЕЛЬНЫХ чисел
+/// Зато пропускает пробелы перед числом и работает с числом любой длины
+
         QByteArray anw = port->write("get История");
         anw = anw.mid(anw.indexOf("start:")+6, 4);
         anw = anw.mid(0, anw.indexOf("\r"));
@@ -602,62 +633,63 @@ void MainWindow::getHistory() {
     anw = anw.mid(0, anw.indexOf("\r"));
     int endid = anw.toInt();
 
-    if (endid < curid) {
-        return;
-    }
+    if (endid >= curid) {
 
-    QProgressDialog *progr_dialog = new QProgressDialog("Считывание истории", "&Отмена", 0, endid-curid-1);
-    progr_dialog->setWindowTitle("Пожалуйста подождите");
-    progr_dialog->setMinimumDuration(0);
+      QProgressDialog *progr_dialog = new QProgressDialog("Считывание истории", "&Отмена", 0, endid-curid-1);
+      progr_dialog->setWindowTitle("Пожалуйста подождите");
+      progr_dialog->setMinimumDuration(0);
 
-    for (int i=curid; i<endid; i++) {
-        QString request = QString("get История[%1]").arg(QString::number(i));
-        QByteArray anw2 = port->write(request.toUtf8());
-        QString rq = "";
+      for (int i=curid; i<endid; i++) {
+          QString request = QString("get История[%1]").arg(QString::number(i));
+          QByteArray anw2 = port->write(request.toUtf8());
+          QString rq = "";
 
-        if (anw2.indexOf("error") > 0) {
-            rq = QString("INSERT INTO UNASSMHISTORY (HISID, OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, %2, '%3', %4, '%5')")
-                    .arg(i)
-                    .arg(azsNum)
-                    .arg("00.00.00 00:00:00")
-                    .arg("-1")
-                    .arg("");
-        } else {
-            QString his_id = anw2.mid(anw2.indexOf("ID:")+3, 4);
-            his_id = his_id.mid(0, his_id.indexOf("\r"));
+          if (anw2.indexOf("error") > 0) {
+              rq = QString("INSERT INTO UNASSMHISTORY (HISID, OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, %2, '%3', %4, '%5')")
+                      .arg(i)
+                      .arg(azsNum)
+                      .arg("00.00.00 00:00:00")
+                      .arg("-1")
+                      .arg("");
+          } else {
+              QString his_id = anw2.mid(anw2.indexOf("ID:")+3, 4);
+              his_id = his_id.mid(0, his_id.indexOf("\r"));
 
-            QString his_time = anw2.mid(anw2.indexOf("Время:")+12, 19);
-            his_time = QDateTime::fromString(his_time, "dd.MM.yyyy hh:mm:ss").toString("yyyy-MM-dd hh:mm:ss");
+              QString his_time = anw2.mid(anw2.indexOf("Время:")+12, 19);
+              his_time = QDateTime::fromString(his_time, "dd.MM.yyyy hh:mm:ss").toString("yyyy-MM-dd hh:mm:ss");
 
-            QString his_type = anw2.mid(anw2.indexOf("Тип:")+7, 4);
-            his_type = his_type.mid(0, his_type.indexOf("\r"));
+              QString his_type = anw2.mid(anw2.indexOf("Тип:")+7, 4);
+              his_type = his_type.mid(0, his_type.indexOf("\r"));
 
-            QString his_data = anw2.mid(anw2.indexOf("Data:")+8);
-            his_data = his_data.left(his_data.length()-6);
+              QString his_data = anw2.mid(anw2.indexOf("Data:")+8);
+              his_data = his_data.left(his_data.length()-6);
 
-            rq = QString("INSERT INTO UNASSMHISTORY (HISID, OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, %2, '%3', %4, '%5')")
-                .arg(i)
-                .arg(azsNum)
-                .arg(his_time)
-                .arg(his_type)
-                .arg(his_data);
-        }
+              rq = QString("INSERT INTO UNASSMHISTORY (HISID, OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, %2, '%3', %4, '%5')")
+                  .arg(i)
+                  .arg(azsNum)
+                  .arg(his_time)
+                  .arg(his_type)
+                  .arg(his_data);
+          }
 
-        query->exec(rq);
-        if (query->lastError().isValid()) {
-            qDebug() << query->lastError().databaseText();
-        }
-        progr_dialog->setValue(i);
-        QCoreApplication::processEvents();
-        if (progr_dialog->wasCanceled()) {
-            break;
-        }
-    }
-    delete progr_dialog;
+          query->exec(rq);
+          if (query->lastError().isValid()) {
+              qDebug() << query->lastError().databaseText();
+          }
+          progr_dialog->setValue(i);
+          QCoreApplication::processEvents();
+          if (progr_dialog->wasCanceled()) {
+              break;
+          }
+      }
+      delete progr_dialog;
 
     //запись на устройство кол-во считанных
-    port->write(QString("run ЧтИстория:{Считано:%1}").arg(endid-1).toUtf8());
-    updateHistory();
+      port->write(QString("run ЧтИстория:{Считано:%1}").arg(endid-1).toUtf8());
+   }
+   port->EndComm();
+   updateHistory();
+
 }
 
 void MainWindow::updateObject() {
@@ -716,14 +748,12 @@ void MainWindow::changedObjectSettings(QByteArray objSett) {
     QJsonObject json_obj = doc.object();
     QString adr = json_obj["addres"].toString();
     QString br = QString::number(json_obj["baudRate"].toInt());
-    QString bop = QString::number(json_obj["byteOnPackage"].toInt());
     QString db = QString::number(json_obj["dataBits"].toInt());
-    QString fc = json_obj["flowControl"].toString();
     QString na = json_obj["name"].toString();
     QString pa = QString::number(json_obj["pairy"].toInt());
     QString sb = QString::number(json_obj["stopBits"].toInt());
 
-    port_settings = new PortSettings(adr, br, bop, db, fc, na, pa, sb);
+    port_settings = new PortSettings(adr, br, db, na, pa, sb);
 }
 
 void MainWindow::setObjectSettings() {
@@ -763,6 +793,8 @@ void MainWindow::writeObjectSettings() {
 }
 
 void MainWindow::startConfigurate() {
+    int errcount=0;
+    int allcount=0;
     ModelFuels *fuel_model = new ModelFuels(db);
     QList<QString> fuel_data = fuel_model->configureFuels();
 
@@ -782,46 +814,60 @@ void MainWindow::startConfigurate() {
     }
 
     port = new Port(port_settings);
-    bool ok = port->changeAccess(1);
+    if (!port->StartComm()) return;
+
+    QSqlQuery* query = new QSqlQuery(db);
+    QString statament = QString("SELECT ADMINPASSWORD FROM OBJECT_TABLES WHERE OBJECTID=%1").arg(azsNum);
+    query->exec(statament);
+    query->next();
+    QByteArray ps = query->value("ADMINPASSWORD").toByteArray();
+
+    bool ok = port->changeAccess(1, ps);
 
     if (ok) {
         for(int i=0; i<fuel_data.length(); i++){
+            allcount++;
             QByteArray conf_answ = port->write(fuel_data.at(i).toUtf8());
             if (conf_answ.indexOf("OK") < 0) {
                 qDebug() << "error on configurate fuel #" << i;
-                return;
+                errcount++;
             }
         }
 
         for(int i=0; i<tank_data.length(); i++){
+            allcount++;
             QByteArray conf_answ = port->write(tank_data.at(i).toUtf8());
             if (conf_answ.indexOf("OK") < 0) {
                 qDebug() << "error on configurate tank #" << i;
-                return;
+                errcount++;
             }
         }
 
         for(int i=0; i<point_data.length(); i++){
+            allcount++;
             QByteArray conf_answ = port->write(point_data.at(i).toUtf8());
             if (conf_answ.indexOf("OK") < 0) {
                 qDebug() << "error on configurate point #" << i;
-                return;
+                errcount++;
             }
         }
+        port->changeAccess(0,"");
+        mbx = new QMessageBox();
+        mbx->setWindowTitle("Конфигурация");
+        if (errcount==0) {
+          mbx->setText("Конфигурация прошла успешно");
+        } else {
+          mbx->setText("Конфигурация прошла с ошибками");
+        }
+        mbx->exec();
+
     } else {
         mbx = new QMessageBox();
         mbx->setWindowTitle("Конфигурация");
         mbx->setText("Не удалось перевести устройство в режим администратора");
         mbx->exec();
-        return;
     }
-
-    port->changeAccess(0);
-
-    mbx = new QMessageBox();
-    mbx->setWindowTitle("Конфигурация");
-    mbx->setText("Конфигурация прошла успешно");
-    mbx->exec();
+    port->EndComm();
 }
 
 QString convertData(QString data) {
@@ -829,13 +875,14 @@ QString convertData(QString data) {
     newData.append(".");
     newData.append(data.split("-")[1]);
     newData.append(".");
-    //newData.append(data.split("-")[0].mid(2,2));
     newData.append(data.split("-")[0]);
     return newData;
 }
 
 void MainWindow::getUserIndex() {
     port = new Port(port_settings);
+    if (!port->StartComm()) return;
+
     QByteArray query = "get UserIndex";
     QByteArray answ = port->write(query);
     int arr_start, arr_len;
@@ -865,43 +912,34 @@ void MainWindow::getUserIndex() {
         all_user_in_db->remove(all_user_in_db->indexOf(keys2[i]));
         updateUserOnDevice(keys2[i]);
     }
+    port->EndComm();
 }
 
 void MainWindow::updateUserOnDevice(int userId) {
     QSqlQuery* query = new QSqlQuery(db);
-    QString statament = QString("SELECT * FROM users WHERE userid=%1").arg(QString::number(userId));
+    QString statament = QString("SELECT USERID, PARENTID, VIEWNAME, FLAGS, CARDID, SLDATE, REFSLIM FROM users WHERE userid=%1").arg(QString::number(userId));
     query->exec(statament);
     //по идее только 1 запись в выборке
     QString userNewData = QString("set UserArr[%1]:{UserID:0 ParentID:0 ViewName:\"\" Flags:0 CardID:0}").arg(QString::number(userId));
     QString userNewLimits = "";
     while (query->next()) {
+        userNewData = QString("set UserArr[%1]:{ UserID:%2 ParentID:%3 ViewName:\"%4\" Flags:%5 CardID:%6 SLData:\"%7\" RefrLim:%8 }")
+                .arg(QString::number(userId))
+                .arg(query->value("USERID").toString())
+                .arg(query->value("PARENTID").toString())
+                .arg(query->value("VIEWNAME").toString())
+                .arg(query->value("FLAGS").toString())
+                .arg(query->value("CARDID").toString())
+                .arg(convertData(query->value("SLDATE").toString()))
+                .arg(query->value("REFSLIM").toString());
+
         if (query->value("REFSLIM").toInt() == 0) {
-            userNewData = QString("set UserArr[%1]:{ UserID:%2 ParentID:%3 ViewName:\"%4\" Flags:%5 CardID:%6 SLData:\"%7\" RefrLim:%8 }")
-                    .arg(QString::number(userId))
-                    .arg(query->value(0).toString())
-                    .arg(query->value("PARENTID").toString())
-                    .arg(query->value("VIEWNAME").toString())
-                    .arg(query->value("FLAGS").toString())
-                    .arg(query->value("CARDID").toString())
-                    .arg(convertData(query->value("SLDATE").toString()))
-                    .arg(query->value("REFSLIM").toString());
             continue;
-        } else {
-            //userNewData = QString("set UserArr[%1]:{UserID:%2 ParentID:%3 ViewName:\"%4\" Flags:%5 CardID:%6 SLData:\"%7\" RefrLim:%8 Limits[]:[")
-            userNewData = QString("set UserArr[%1]:{UserID:%2 ParentID:%3 ViewName:\"%4\" Flags:%5 CardID:%6 SLData:\"%7\" RefrLim:%8}")
-                    .arg(QString::number(userId))
-                    .arg(query->value(0).toString())
-                    .arg(query->value("PARENTID").toString())
-                    .arg(query->value("VIEWNAME").toString())
-                    .arg(query->value("FLAGS").toString())
-                    .arg(query->value("CARDID").toString())
-                    .arg(convertData(query->value("SLDATE").toString()))
-                    .arg(query->value("REFSLIM").toString());
         }
 
         userNewLimits = QString("set UserArr[%1].Limits[]:[").arg(QString::number(userId));
         QSqlQuery* limits_query = new QSqlQuery(db);
-        QString limits_statament = QString("SELECT * FROM limits WHERE userid=%1").arg(QString::number(userId));
+        QString limits_statament = QString("SELECT FUELID, TYPED, DAYSD, VALUEL FROM limits WHERE userid=%1").arg(QString::number(userId));
         limits_query->exec(limits_statament);
 
         QString userLimits = "";
@@ -909,7 +947,7 @@ void MainWindow::updateUserOnDevice(int userId) {
             userLimits += QString("{fID:%1 Tp:%2 Dy:%3 Vl:%5},")
                     .arg(limits_query->value("FUELID").toString())
                     .arg(limits_query->value("TYPED").toString())
-                    .arg(limits_query->value("DAYS").toString())
+                    .arg(limits_query->value("DAYSD").toString())
                     .arg(limits_query->value("VALUEL").toString());
         }
         userLimits = userLimits.mid(0, userLimits.length()-1);

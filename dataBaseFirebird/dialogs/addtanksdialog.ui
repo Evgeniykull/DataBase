@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Резервуар</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -112,6 +112,11 @@
    </property>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>cbFuels</tabstop>
+  <tabstop>leAdress</tabstop>
+  <tabstop>leComment</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

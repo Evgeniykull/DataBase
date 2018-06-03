@@ -36,13 +36,13 @@ addUserDialog::addUserDialog(int user_id, QSqlDatabase db, QWidget *parent) :
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
 
     QSqlQuery* query = new QSqlQuery(db);
-    QString statament = "SELECT * FROM users WHERE userid=";
+    QString statament = "SELECT PARENTID, SHORTNAME, VIEWNAME, SLDATE, FLAGS FROM users WHERE userid=";
     statament.append(QString::number(user_id));
     query->exec(statament);
     query->next();
 
     QSqlRecord rec = query->record();
-    int perm = rec.value(6).toInt();
+    int perm = rec.value("FLAGS").toInt();
     if (perm > 3) {
         ui->cb3->setChecked(true);
         perm = perm - 4;

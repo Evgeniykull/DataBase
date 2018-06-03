@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>584</width>
-    <height>338</height>
+    <height>247</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,10 +26,23 @@
       <item row="0" column="1">
        <widget class="QComboBox" name="cbPortName"/>
       </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="cbDataBist"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QComboBox" name="cbPairity"/>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="lblPort">
         <property name="text">
          <string>Порт</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblBaudRate">
+        <property name="text">
+         <string>Скорость передачи</string>
         </property>
        </widget>
       </item>
@@ -40,35 +53,8 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="cbDataBist"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="lblBaudRate">
-        <property name="text">
-         <string>Скорость передачи</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QComboBox" name="cbPairity"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="lblStopBits">
-        <property name="text">
-         <string>Биты остановки</string>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="1">
        <widget class="QComboBox" name="cbStopBits"/>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="lblFlowControl">
-        <property name="text">
-         <string>Управление потоком</string>
-        </property>
-       </widget>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="lblPairity">
@@ -77,17 +63,21 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="1">
-       <widget class="QComboBox" name="cbFlowControl"/>
+      <item row="4" column="0">
+       <widget class="QLabel" name="lblStopBits">
+        <property name="text">
+         <string>Биты остановки</string>
+        </property>
+       </widget>
       </item>
-      <item row="6" column="0">
+      <item row="5" column="0">
        <widget class="QLabel" name="lblAddres">
         <property name="text">
          <string>Адрес</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="1">
+      <item row="5" column="1">
        <widget class="QLineEdit" name="leAddres">
         <property name="text">
          <string>0</string>
@@ -100,64 +90,6 @@
         </property>
         <property name="clearButtonEnabled">
          <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QLabel" name="lblByteInPacket">
-        <property name="text">
-         <string>Бит в пакете</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="lblPrecision">
-        <property name="text">
-         <string>Точность</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="1">
-       <widget class="QComboBox" name="cbPrecision">
-        <property name="currentText">
-         <string>1</string>
-        </property>
-        <item>
-         <property name="text">
-          <string>1</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>3</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>4</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>5</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>6</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="7" column="1">
-       <widget class="QLineEdit" name="leByteInPacket">
-        <property name="text">
-         <string>100</string>
         </property>
        </widget>
       </item>

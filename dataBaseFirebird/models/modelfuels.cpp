@@ -80,10 +80,12 @@ QList<QString> ModelFuels::configureFuels() {
     int i = 0;
     while(query->next()) {
         QString data = QString("set Установки.ВидыТоплива[%1]:").arg(QString::number(i));
+        float pr = query->value("PRICE").toFloat();
+
         QString json_data = QString("{Топливо:%1 Цена:%2 Наименование:\"%3\"}")
-                .arg(query->value(0).toString())
-                .arg(query->value(3).toString())
-                .arg(query->value(2).toString());
+                .arg(query->value("FUELDID").toString())
+                .arg(QString::number(pr))
+                .arg(query->value("VIEWNAME").toString());
 
         data += json_data;
         fnsh->push_back(data);

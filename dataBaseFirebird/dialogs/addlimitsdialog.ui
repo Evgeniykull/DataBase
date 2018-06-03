@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Лимит</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -165,6 +165,12 @@
    </item>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>cbFuels</tabstop>
+  <tabstop>leValue</tabstop>
+  <tabstop>leDays</tabstop>
+  <tabstop>cbType</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

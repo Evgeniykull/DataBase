@@ -54,8 +54,8 @@ public:
 private slots:
     void onSettingsClick();
     void rewriteSettings(int addr = -1);
-    void onChangeAccessClick();
-    void onAccessUpdateClick();
+//    void onChangeAccessClick();
+//    void onAccessUpdateClick();
 
 private:
     Ui::Port *ui;
@@ -75,7 +75,6 @@ private:
     QByteArray intWriteData(QByteArray text); // Функция обмена, отсылающая строку и принимающая результат
 
     bool transfer_data = false; //если true, то запрет на передачу
-//    unsigned char buff[4096];
     unsigned char errnum;  // Количество ошибочных обменов
     unsigned char errcode; // Код ошибки обмена
     unsigned char answc;   // Код ответа

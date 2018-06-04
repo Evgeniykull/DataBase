@@ -41,7 +41,7 @@ void ModelLimit::editLimits(int limits_id) {
 
 void ModelLimit::finishAddLimits(QString fuelName, QString value, QString days, QString type) {
     QSqlQuery* query = new QSqlQuery(data_base);
-    QString statament = QString("INSERT INTO limits (userid, fuelid, valuel, days, typed) VALUES (%1, %2, %3, %4, %5)")
+    QString statament = QString("INSERT INTO limits (userid, fuelid, valuel, daysd, typed) VALUES (%1, %2, %3, %4, %5)")
                 .arg(userId)
                 .arg(fuelName)
                 .arg(value)
@@ -65,7 +65,7 @@ void ModelLimit::finishAddLimits(QString fuelName, QString value, QString days, 
 
 void ModelLimit::finishEditLimits(int limitsId, QString fuelName, QString value, QString days, QString type) {
     QSqlQuery* query = new QSqlQuery(data_base);
-    QString statament = QString("UPDATE limits SET userid=%1, fuelid=%2, valuel=%3, days=%4, typed=%5  WHERE id=%6")
+    QString statament = QString("UPDATE limits SET userid=%1, fuelid=%2, valuel=%3, daysd=%4, typed=%5  WHERE id=%6")
                 .arg(userId)
                 .arg(fuelName)
                 .arg(value)

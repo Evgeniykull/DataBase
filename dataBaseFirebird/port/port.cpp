@@ -4,6 +4,7 @@
 #include <QInputDialog>
 #include <QThread>
 #include <QTextCodec>
+#include <QDebug>
 #include "utils/treadworker.h"
 #include "utils/catalogswrither.h"
 
@@ -60,6 +61,7 @@ Port::Port(PortSettings *ps, QWidget *parent) :
 
 Port::~Port()
 {
+    closePort();  // На всякий случай и для возможности раннего выхода при использовании статического создания
     delete ui;
 }
 
@@ -88,8 +90,9 @@ void Port::rewriteSettings(int addr) {
     closePort();
 }
 
+/*
 void Port::onChangeAccessClick() {
-    /*openPort();
+    openPort();
     if (!port->isOpen()) {
         QMessageBox::information(0, QObject::tr("Невозможно записать на устройство"), QObject::tr("Порт закрыт"));
         return;
@@ -129,8 +132,8 @@ void Port::onChangeAccessClick() {
         QMessageBox::information(0, QObject::tr("Изменение режима доступа"), QString(req_data));
     }
 
-    closePort();*/
-}
+    closePort();
+}*/
 
 bool Port::changeAccess(int level,QByteArray passwd) {
     QByteArray req_acc_level = "ReqAccLevel:" + QByteArray::number(level);
@@ -163,8 +166,8 @@ bool Port::changeAccess(int level,QByteArray passwd) {
 //    return answ_message == "Ok";
 }
 
-void Port::onAccessUpdateClick() {
-    /*openPort();
+/*void Port::onAccessUpdateClick() {
+    openPort();
     if (!port->isOpen()) {
         QMessageBox::information(0, QObject::tr("Невозможно записать на устройство"), QObject::tr("Порт закрыт"));
         return;
@@ -175,8 +178,8 @@ void Port::onAccessUpdateClick() {
     QString answ_message = QString(req_data).mid(pos + 12, 1);
 
     ui->cbAccess->setCurrentIndex(answ_message.toInt() + 1);
-    closePort();*/
-}
+    closePort();
+}*/
 
 int Port::openPort()
 {
@@ -245,9 +248,12 @@ void Port::EndComm() {
 QByteArray Port::getPortDataOnly(int len) {
   QByteArray qba;
   int tosumm=0;  // Счетчик общего времени ожидания
+  int timeout;
+  timeout=len;
+  if (timeout<40) timeout=40;
   qba.clear();
   tosumm=0;
-  while ((qba.length()<len)&&(tosumm<40)) {    // Здесь - время межбайтового таймаута
+  while ((qba.length()<len)&&(tosumm<timeout)) {    // Здесь - время межбайтового таймаута
     int llen=qba.length();
     int crn=len-llen;
     QByteArray readed;
@@ -256,10 +262,12 @@ QByteArray Port::getPortDataOnly(int len) {
       port->waitForReadyRead(5);  // Ожидаем - если ничего не пришло ещё
       tosumm+=5;
     } else {
+      qDebug() << " GPDO " << readed.length();
       qba.append(readed);
       tosumm=0;
     }
   }
+  if (tosumm>=timeout) qDebug() << " GPDO Timeout";
   return qba;
 }
 
@@ -273,9 +281,10 @@ QByteArray Port::getPortData(char prebyte,int len) {
     qba.append(port->read(1));
 // Считываем по одному байту до тех пор, пока не найдем преамбулу
 // До преамбулы может быть мусор - его откидываем
-    if ((qba.length()<1)?(1):(qba[0]!=prebyte)) {
-      qba.clear();
+    if (qba.length()<1) {
       tosumm+=10;
+    } else if (qba[0]!=prebyte) {
+      qba.clear();
     }
   } while ((qba.length()==0)&&(tosumm<200)); // Здесь - время в миллисекундах максимального ожидания ответа
   if (qba.length()!=0) { // Преамбула пришла - иначе ответа нет
@@ -383,7 +392,7 @@ QByteArray Port::intWriteData(QByteArray text) {
     rd_data=getPortData(0xB5,4);
     if (rd_data.length()) {
 //      getdata=rd_data;
-      rd_data.append(getPortDataOnly((int)rd_data[2]+((int)(rd_data[3])*256)+2));
+      rd_data.append(getPortDataOnly((int)((unsigned char)rd_data[2])+(((int)((unsigned char)rd_data[3]))*256)+2));
       if (Check_hCRC(rd_data)) {
         if ((((unsigned char)(rd_data[1]&0x7F)==addres)||(addres==0))&&(rd_data[1]&0x80)) {
           rd_data.remove(0,4);

@@ -177,12 +177,11 @@ void MainWindow::readSettings() {
 
 void MainWindow::closeEvent(QCloseEvent *event) {
 // Временно
+    writeSettings();
 
     event->accept();
     return;
 
-
-    writeSettings();
     QMessageBox::StandardButton resBtn = QMessageBox::question( this, "dataBaseFirebird",
        "Вы уверены, что хотите выйти?\n",
        QMessageBox::No | QMessageBox::Yes,
@@ -587,109 +586,101 @@ void MainWindow::updateHistory() {
 
 #include <QProgressDialog>
 void MainWindow::getHistory() {
-    port = new Port(port_settings);
-    if (!port->StartComm()) return;
-    //синхронизируем время
-    QByteArray anw1 = port->write("get Состояние.Время");
+    Port port(port_settings);
+    int i;
+    int curid,endid;
+    QString json;
+    QJsonDocument jsonDoc;
+    QJsonObject obj;
+//
+    if (!port.StartComm()) return;
+//синхронизируем время
+    QByteArray anw1 = port.write("get Состояние.Время");
     QString dev_time = anw1.mid(anw1.indexOf("Время:")+12, 19);
     QString cur_dt = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
     qint64 sec1 = QDateTime::fromString(dev_time, "dd.MM.yyyy hh:mm:ss").toSecsSinceEpoch();
     qint64 sec2 = QDateTime::fromString(cur_dt, "dd.MM.yyyy hh:mm:ss").toSecsSinceEpoch();
     qint64 dd = abs(sec2 - sec1);
-
     if (dd > 60){
         QString com = QString("run УстВремя: \"%1\"").arg(cur_dt);
-        port->write(com.toUtf8());
+        port.write(com.toUtf8());
     }
-
+//
+    QByteArray anw; // Ответ
     QSqlQuery* query = new QSqlQuery(db);
     QString statament = QString("SELECT max(hisid) FROM UNASSMHISTORY WHERE OBJECTID=%1").arg(azsNum);
     query->exec(statament);
     query->next();
-    int curid = query->value(0).toInt();
+    curid = query->value(0).toInt();
     if (curid <= 0) {
-
-//// ТАК ДЕЛАТЬ НЕЛЬЗЯ!!!
-/// А что будет, если start будет равно значению 2857345???
-/// Нужно один раз написать функцию поиска числа, раз уж ты не разбираешь JSON,
-/// и везде её использовать
-/// Функция должна работать ОБЯЗАТЕЛЬНО следующим образом:
-/// - с заданной позиции перебираем символы, пока не найдем первое число
-/// - фиксируем эту позицию как начало числа
-/// - перебирам символы дальше, пока число не кончится
-/// - фиксируем эту позицию как окончание числа
-/// - всё внутри - число.
-/// Это работает только для ЦЕЛЫХ ПОЛОЖИТЕЛЬНЫХ чисел
-/// Зато пропускает пробелы перед числом и работает с числом любой длины
-
-        QByteArray anw = port->write("get История");
-        anw = anw.mid(anw.indexOf("start:")+6, 4);
-        anw = anw.mid(0, anw.indexOf("\r"));
-        curid = anw.toInt();
+      int end;
+      anw = port.write("get История");
+      parseArray(anw,curid,end);
     }
+    anw = port.write("get Состояние.История");
+/*    json = conv.dataToJson(anw);
+    jsonDoc = QJsonDocument::fromJson(json.toUtf8());
+    obj = jsonDoc.object();
+    endid = obj["start"].toInt();
+    len = obj["length"].toInt();*/
 
-    QByteArray anw = port->write("get Состояние.История");
-    anw = anw.mid(anw.indexOf("Текущий:")+15, 4);
-    anw = anw.mid(0, anw.indexOf("\r"));
-    int endid = anw.toInt();
 
+    endid=getJSONField(anw,"Текущий").toInt();
     if (endid >= curid) {
 
       QProgressDialog *progr_dialog = new QProgressDialog("Считывание истории", "&Отмена", 0, endid-curid-1);
       progr_dialog->setWindowTitle("Пожалуйста подождите");
       progr_dialog->setMinimumDuration(0);
 
-      for (int i=curid; i<endid; i++) {
-          QString request = QString("get История[%1]").arg(QString::number(i));
-          QByteArray anw2 = port->write(request.toUtf8());
-          QString rq = "";
+      for (i=curid; i<endid; i++) {
+        QString request = QString("get История[%1]").arg(QString::number(i));
+        QString anw2 = port.write(request.toUtf8());
+        QString rq = "";
 
-          if (anw2.indexOf("error") > 0) {
-              rq = QString("INSERT INTO UNASSMHISTORY (HISID, OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, %2, '%3', %4, '%5')")
+        if (anw2.indexOf("error") > 0) {
+          rq = QString("INSERT INTO UNASSMHISTORY (HISID, OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, %2, '%3', %4, '%5')")
                       .arg(i)
                       .arg(azsNum)
                       .arg("00.00.00 00:00:00")
                       .arg("-1")
                       .arg("");
-          } else {
-              QString his_id = anw2.mid(anw2.indexOf("ID:")+3, 4);
-              his_id = his_id.mid(0, his_id.indexOf("\r"));
-
-              QString his_time = anw2.mid(anw2.indexOf("Время:")+12, 19);
-              his_time = QDateTime::fromString(his_time, "dd.MM.yyyy hh:mm:ss").toString("yyyy-MM-dd hh:mm:ss");
-
-              QString his_type = anw2.mid(anw2.indexOf("Тип:")+7, 4);
-              his_type = his_type.mid(0, his_type.indexOf("\r"));
-
-              QString his_data = anw2.mid(anw2.indexOf("Data:")+8);
-              his_data = his_data.left(his_data.length()-6);
-
-              rq = QString("INSERT INTO UNASSMHISTORY (HISID, OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, %2, '%3', %4, '%5')")
+        } else {
+          QString sdt,smaindt,pdt;
+          int sid,stp;
+          JsonConvertor conv;
+          QString json = conv.dataToJson(anw2.toUtf8());
+          QJsonDocument jsonDoc = QJsonDocument::fromJson(json.toUtf8());
+          QJsonObject obj = jsonDoc.object();
+          sid=obj["ID"].toInt();
+          sdt=obj["Время"].toString();
+          pdt = QDateTime::fromString(sdt, "dd.MM.yyyy hh:mm:ss").toString("yyyy-MM-dd hh:mm:ss");
+          stp=obj["Тип"].toInt();
+// вот это может работать НЕ ПРАВИЛЬНО
+          smaindt=obj["Data"].toString();
+          rq = QString("INSERT INTO UNASSMHISTORY (HISID, OBJECTID, OBJTIME, OBJTYPE, DATA) VALUES (%1, %2, '%3', %4, '%5')")
                   .arg(i)
                   .arg(azsNum)
-                  .arg(his_time)
-                  .arg(his_type)
-                  .arg(his_data);
-          }
-
-          query->exec(rq);
-          if (query->lastError().isValid()) {
-              qDebug() << query->lastError().databaseText();
-          }
-          progr_dialog->setValue(i);
-          QCoreApplication::processEvents();
-          if (progr_dialog->wasCanceled()) {
-              break;
-          }
-      }
-      delete progr_dialog;
-
-    //запись на устройство кол-во считанных
-      port->write(QString("run ЧтИстория:{Считано:%1}").arg(endid-1).toUtf8());
-   }
-   port->EndComm();
-   updateHistory();
-
+                  .arg(pdt)
+                  .arg(stp)
+                  .arg(smaindt);
+        }
+        query->exec(rq);
+        if (query->lastError().isValid()) {
+            qDebug() << query->lastError().databaseText();
+        }
+        progr_dialog->setValue(i);
+        QCoreApplication::processEvents();
+        if (progr_dialog->wasCanceled()) {
+            break;
+        }
+    }
+    delete progr_dialog;
+// запись на устройство кол-во РЕАЛЬНО считанных данных
+// работает даже если нажали "ОТМЕНУ"
+    if (i>0) port.write(QString("run ЧтИстория:{Считано:%1}").arg(i-1).toUtf8());
+  }
+  port.EndComm();
+  updateHistory();
 }
 
 void MainWindow::updateObject() {
@@ -879,144 +870,92 @@ QString convertData(QString data) {
     return newData;
 }
 
-void MainWindow::getUserIndex() {
-    port = new Port(port_settings);
-    if (!port->StartComm()) return;
+////////////////////////////////
+// Всё что касается пользователей
 
-    QByteArray query = "get UserIndex";
-    QByteArray answ = port->write(query);
+// КАЖЕТСЯ, эта функция вызывается для обновления данных пользователей на устройстве
+void MainWindow::getUserIndex() {
+    Port port(port_settings);
+    QVector<int> hd_indexes;  // Индексы в устройстве до синхронизации
+//    QVector<int> del_indexes; // Индексы на удаление
+//    QVector<int> sync_indexes;// Обновленные индексы
+    QSqlQuery query(db);
+    JsonConvertor conv;
+    QString userNewLimits;
+    QByteArray user_answ;   // Ответ от устройства
+    QString userNewData;
+    if (!port.StartComm()) return;
+//QByteArray query = "get UserIndex";
+    QByteArray answ = port.write("get UserIndex");
     int arr_start, arr_len;
     parseArray(answ, arr_start, arr_len);
 
-    //цикл от start с перебором всех
-    QVector<int> *indexes = getDataByLoop(query, arr_start, arr_len, "UserID");
-    QMap<int, QJsonObject> *device_users = getUsersOnDevice(*indexes);
-
-    QVector<int> *all_user_in_db = new QVector<int>;
-    QSqlQuery* query0 = new QSqlQuery(db);
-    QString statament0 = QString("SELECT userid FROM users");
-    query0->exec(statament0);
-    while (query0->next()) {
-        all_user_in_db->push_back(query0->value(0).toInt());
+// Перебираем все элементы массива индексов
+    for (int i = arr_start; i < arr_start + arr_len; i++) {
+      QByteArray middle_answ = port.write("get UserIndex[" + QByteArray::number(i) + "]");
+      QString json = conv.dataToJson(middle_answ);
+      QJsonObject obj = QJsonDocument::fromJson(json.toUtf8()).object();
+      hd_indexes.append(obj["UserID"].toInt());
     }
 
-    //как получили map, проходимся по его ключам, сопоставляем json и записи из БД
-    QList<int> keys = device_users->keys();
-    for (int i = 0; i < keys.length(); i++) {
-        all_user_in_db->remove(all_user_in_db->indexOf(keys[i]));
-        updateUserOnDevice(keys[i]);
-    }
-
-    QList<int> keys2 = all_user_in_db->toList();
-    for (int i = 0; i < keys2.length(); i++) {
-        all_user_in_db->remove(all_user_in_db->indexOf(keys2[i]));
-        updateUserOnDevice(keys2[i]);
-    }
-    port->EndComm();
-}
-
-void MainWindow::updateUserOnDevice(int userId) {
-    QSqlQuery* query = new QSqlQuery(db);
-    QString statament = QString("SELECT USERID, PARENTID, VIEWNAME, FLAGS, CARDID, SLDATE, REFSLIM FROM users WHERE userid=%1").arg(QString::number(userId));
-    query->exec(statament);
-    //по идее только 1 запись в выборке
-    QString userNewData = QString("set UserArr[%1]:{UserID:0 ParentID:0 ViewName:\"\" Flags:0 CardID:0}").arg(QString::number(userId));
-    QString userNewLimits = "";
-    while (query->next()) {
-        userNewData = QString("set UserArr[%1]:{ UserID:%2 ParentID:%3 ViewName:\"%4\" Flags:%5 CardID:%6 SLData:\"%7\" RefrLim:%8 }")
-                .arg(QString::number(userId))
-                .arg(query->value("USERID").toString())
-                .arg(query->value("PARENTID").toString())
-                .arg(query->value("VIEWNAME").toString())
-                .arg(query->value("FLAGS").toString())
-                .arg(query->value("CARDID").toString())
-                .arg(convertData(query->value("SLDATE").toString()))
-                .arg(query->value("REFSLIM").toString());
-
-        if (query->value("REFSLIM").toInt() == 0) {
-            continue;
-        }
-
-        userNewLimits = QString("set UserArr[%1].Limits[]:[").arg(QString::number(userId));
-        QSqlQuery* limits_query = new QSqlQuery(db);
-        QString limits_statament = QString("SELECT FUELID, TYPED, DAYSD, VALUEL FROM limits WHERE userid=%1").arg(QString::number(userId));
-        limits_query->exec(limits_statament);
-
+// Перебираем все записи базы данных
+    QString statament = QString("SELECT USERID, PARENTID, VIEWNAME, FLAGS, CARDID, SLDATE, REFSLIM FROM users"); //.arg(QString::number(userId));
+    query.exec(statament);
+    while (query.next()) {
+      int base_uid=query.value("USERID").toInt();
+      userNewData = QString("set UserArr[%1]:{ UserID:%2 ParentID:%3 ViewName:\"%4\" Flags:%5 CardID:%6 SLData:\"%7\" RefrLim:%8 ")
+              .arg(query.value("USERID").toString())  //QString::number(userId))
+              .arg(query.value("USERID").toString())
+              .arg(query.value("PARENTID").toString())
+              .arg(query.value("VIEWNAME").toString())
+              .arg(query.value("FLAGS").toString())
+              .arg(query.value("CARDID").toString())
+              .arg(convertData(query.value("SLDATE").toString()))
+              .arg(query.value("REFSLIM").toString());
+      if (query.value("REFSLIM").toInt()) {
+// Обновляем лимиты
+        int limcnt=0;
+        userNewLimits = QString("Limits[]:["); //.arg(QString::number(userId));
+        QSqlQuery limits_query(db);
+        QString limits_statament = QString("SELECT FUELID, TYPED, DAYSD, VALUEL FROM limits"); // WHERE userid=%1").arg(QString::number(userId));
+        limits_query.exec(limits_statament);
         QString userLimits = "";
-        while(limits_query->next()) {
+        while(limits_query.next()) {
+            limcnt++;
             userLimits += QString("{fID:%1 Tp:%2 Dy:%3 Vl:%5},")
-                    .arg(limits_query->value("FUELID").toString())
-                    .arg(limits_query->value("TYPED").toString())
-                    .arg(limits_query->value("DAYSD").toString())
-                    .arg(limits_query->value("VALUEL").toString());
+                    .arg(limits_query.value("FUELID").toString())
+                    .arg(limits_query.value("TYPED").toString())
+                    .arg(limits_query.value("DAYSD").toString())
+                    .arg(limits_query.value("VALUEL").toString());
+        }
+        while (limcnt<5) {
+          limcnt++;
+          userLimits += QString("{fID:0 Tp:0 Dy:0 Vl:0},");
         }
         userLimits = userLimits.mid(0, userLimits.length()-1);
         userNewLimits.append(userLimits);
-        //какое поведение должно быть, если лимитов нет?
         userNewLimits.append("]");
+      } else {
+// Обновляем только данные
+        userNewLimits="";
+      }
+      userNewData.append(userNewLimits);
+      userNewData.append(" }");
+// Записываем данные пользователя в базу, при этом удаляем данную запись из списка индексов
+      user_answ = port.write(userNewData.toUtf8());
+// НУЖНО ПРОАНАЛИЗИРОВАТЬ ОТВЕТ
+      int idpos=hd_indexes.indexOf(base_uid);
+      if (idpos>=0) {
+        hd_indexes.remove(idpos);  // Выкидываем этот индекс
+      }
     }
-
-    QByteArray user_answ = port->write(userNewData.toUtf8());
-    qDebug() << "Trrrrr";
-    if (user_answ.indexOf("OK") < 0) {
-        qDebug() << "Error: " << userNewData;
-        qDebug() << "error on user set #" << userId;
-    } else {
-        if (!userNewLimits.isEmpty()) {
-            QByteArray user_answ2 = port->write(userNewLimits.toUtf8());
-            if (user_answ2.indexOf("OK") < 0) {
-                qDebug() << "Error: " << userNewLimits;
-                return;
-            }
-        }
-
-        QSqlQuery* query2 = new QSqlQuery(db);
-        QString statament2 = QString("UPDATE users SET refslim=0 WHERE userid=%1").arg(QString::number(userId));
-        query2->exec(statament2);
+// Пользователи обновлены. Удаляем оставшихся пользователей
+    int delindcount=hd_indexes.size();
+    for (int di=0;di<delindcount;di++) {
+      QString userNewData = QString("set UserArr[%1]:{UserID:0 ParentID:0 ViewName:\"\" Flags:0 CardID:0}").arg(QString::number(hd_indexes[di]));
+      user_answ = port.write(userNewData.toUtf8());
     }
-}
-
-void MainWindow::parseArray(QByteArray dataArr, int &start, int &len) {
-    JsonConvertor *conv = new JsonConvertor();
-    QString json = conv->dataToJson(dataArr);
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(json.toUtf8());
-    QJsonObject obj = jsonDoc.object();
-    start = obj["start"].toInt();
-    len = obj["length"].toInt();
-}
-
-QVector<int>* MainWindow::getDataByLoop(QByteArray query, int start, int len, QString field) {
-    QVector<int> *vct = new QVector<int>;
-    JsonConvertor *conv = new JsonConvertor();
-    for (int i = start; i < start + len; i++) {
-        QByteArray middle_answ = port->write(query + "[" + QByteArray::number(i) + "]");
-        QString json = conv->dataToJson(middle_answ);
-        QJsonObject obj = QJsonDocument::fromJson(json.toUtf8()).object();
-        vct->append(obj[field].toInt());
-    }
-    return vct;
-}
-
-//перебор пользователей
-QMap<int, QJsonObject>* MainWindow::getUsersOnDevice(QVector<int> users_ids) {
-    //лучше в структуру записывать <int (ID), JSON>
-    QMap<int, QJsonObject> *device_users = new QMap<int, QJsonObject>;
-    QByteArray answer = "";
-    QByteArray query = "get UserArr";
-    JsonConvertor *conv = new JsonConvertor();
-    for (int i=0; i<users_ids.length(); i++) {
-        QByteArray middle_answ = port->write(query + "[" + QByteArray::number(users_ids[i]) + "]");
-        QString json = conv->dataToJson(middle_answ);
-        QJsonParseError *err = new QJsonParseError();
-        QJsonDocument doc = QJsonDocument::fromJson(json.toUtf8(), err);
-        if (doc.isEmpty()) {
-            qDebug() << "111";
-        }
-        QJsonObject obj = doc.object(); //не получается в json =(
-        device_users->insert(obj["UserID"].toInt(), obj);
-        answer += json;
-    }
-    return device_users;
+    port.EndComm();
 }
 
 void MainWindow::getUserCard() {
@@ -1041,6 +980,7 @@ void MainWindow::changeUserCard() {
     timer_end = 0;
     QByteArray answ;
     QDateTime dt = QDateTime::currentDateTime();
+    if (!card_reader->StartComm()) return;
     while (state < 1) {
         //таймер на 5 секунд
         if (QDateTime::currentDateTime().toSecsSinceEpoch() - dt.toSecsSinceEpoch() > 50) break;
@@ -1051,48 +991,44 @@ void MainWindow::changeUserCard() {
 
     if (state != 2) {
         qDebug() << "State not 2";
-        return;
-    }
-
-    QString ID = getValueFromState(answ, "ID:");
-    QString card_id = dt.toString("dhhmmss");
+    } else {
+      QString ID = getValueFromState(answ, "ID:");
+      QString card_id = dt.toString("dhhmmss");
     //запись в БД
-    QSqlQuery* change_card_id_query = new QSqlQuery(db);
-    QString statament = QString("UPDATE users SET cardid=%1 WHERE userid=%2").arg(card_id).arg(selected_user_id);
-    change_card_id_query->exec(statament);
+      QSqlQuery* change_card_id_query = new QSqlQuery(db);
+      QString statament = QString("UPDATE users SET cardid=%1 WHERE userid=%2").arg(card_id).arg(selected_user_id);
+      change_card_id_query->exec(statament);
 
-    if (change_card_id_query->lastError().isValid()) {
-        qDebug() << change_card_id_query->lastError().databaseText();
-    }
+      if (change_card_id_query->lastError().isValid()) {
+          qDebug() << change_card_id_query->lastError().databaseText();
+      }
 
-    QString convertCartInt = getCartMemoryData(card_id.toInt());
-    QString cart_data = convertCartInt + "00000000" + getCartMemoryData(selected_user_id) + "01000000";
-    QString query_to_card = QString("run RFWrite:{ Key:\"B\" Addr:1 ID:\"%1\" Data:\"%2\" }").arg(ID).arg(cart_data);
-    qDebug() << query_to_card;
+      QString convertCartInt = getCartMemoryData(card_id.toInt());
+      QString cart_data = convertCartInt + "00000000" + getCartMemoryData(selected_user_id) + "01000000";
+      QString query_to_card = QString("run RFWrite:{ Key:\"B\" Addr:1 ID:\"%1\" Data:\"%2\" }").arg(ID).arg(cart_data);
+      qDebug() << query_to_card;
 
     //запись в картридер
-    answ = card_reader->writeData(query_to_card.toUtf8());
-    qDebug() << answ;
+      answ = card_reader->writeData(query_to_card.toUtf8());
+      qDebug() << answ;
 
-    answ = card_reader->writeData("get RFInfo");
-    qDebug() << answ;
-    state = getValueFromState(answ, "State:").toInt();
+      answ = card_reader->writeData("get RFInfo");
+      qDebug() << answ;
+      state = getValueFromState(answ, "State:").toInt();
 
-    if (state < 10) {
-        qDebug() << "State < 10";
-        return;
+      if (state < 10) {
+          qDebug() << "State < 10";
+      } else {
+        answ = card_reader->writeData("run RFRead:{ Key:\"B\" Addr:1}");
+        answ = card_reader->writeData("get RFInfo");
+        QString _final = getValueFromState(answ, "Data:");
+        if (QString::compare(cart_data, _final)) {
+          qDebug() << "Error. Date not equal.";
+        }
+        qDebug() << "Success. Card changed.";
+      }
     }
-
-    answ = card_reader->writeData("run RFRead:{ Key:\"B\" Addr:1}");
-    answ = card_reader->writeData("get RFInfo");
-
-    QString _final = getValueFromState(answ, "Data:");
-
-    if (QString::compare(cart_data, _final)) {
-        qDebug() << "Error. Date not equal.";
-    }
-
-    qDebug() << "Success. Card changed.";
+    card_reader->EndComm();
 }
 
 QString MainWindow::getCartMemoryData(int k) {
@@ -1117,6 +1053,24 @@ QString MainWindow::getCartMemoryData(int k) {
     //qDebug() << subA << subB << subC << subD;
     return finally;
 }
+
+void MainWindow::parseArray(QByteArray dataArr, int &start, int &len) {
+    JsonConvertor conv;
+    QString json = conv.dataToJson(dataArr);
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(json.toUtf8());
+    QJsonObject obj = jsonDoc.object();
+    start = obj["start"].toInt();
+    len = obj["length"].toInt();
+}
+
+QJsonValue MainWindow::getJSONField(QByteArray data,QString fieldname) {
+  JsonConvertor conv;
+  QString json = conv.dataToJson(data);
+  QJsonDocument jsonDoc = QJsonDocument::fromJson(json.toUtf8());
+  QJsonObject obj = jsonDoc.object();
+  return obj[fieldname];
+}
+
 
 QString MainWindow::getValueFromState(QString source, QString fnd) {
     int pos1 = source.indexOf(fnd);

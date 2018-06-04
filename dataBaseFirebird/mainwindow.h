@@ -11,6 +11,7 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QJsonObject>
 #include "port/port.h"
 #include "port/portsettings.h"
 
@@ -85,7 +86,6 @@ private slots:
     void startConfigurate();
     void getUserCard();
     void changeUserCard();
-    void updateUserOnDevice(int);
 
     void currentTabChanged(int);
     void currentTab2Changed(int);
@@ -97,11 +97,10 @@ private slots:
     void changeAccess();
     void accessCheck();
 
-    //my
+    //my Всякие дополнительные полезные функции
     void getUserIndex();
     void parseArray(QByteArray, int&, int&);
-    QVector<int>* getDataByLoop(QByteArray, int, int, QString);
-    QMap<int, QJsonObject>* getUsersOnDevice(QVector<int> users_ids);
+    QJsonValue getJSONField(QByteArray data,QString fieldname);
     void timerEnd();
 
   private:

@@ -45,17 +45,15 @@ public:
     bool StartComm();  // Открывает порт (возвращает 1 если всё нормально)
     void EndComm();    // Закрывает порт
 //    void sendData(QByteArray);
-    QByteArray writeData(QByteArray text); // Первая функция обмена
-    QByteArray write(QByteArray text);     // Вторая функция обмена
+    QString writeData(QString text); // Первая функция обмена
+    QString write(QString text);     // Вторая функция обмена
 // Функции, реализующие логику работы с устройством
-    bool changeAccess(int,QByteArray passwd);
+    bool changeAccess(int,QString passwd);
 //
 
 private slots:
     void onSettingsClick();
     void rewriteSettings(int addr = -1);
-//    void onChangeAccessClick();
-//    void onAccessUpdateClick();
 
 private:
     Ui::Port *ui;
@@ -72,7 +70,7 @@ private:
     void Add_hCRC(QByteArray * data);
     int Check_hCRC(QByteArray data);
 
-    QByteArray intWriteData(QByteArray text); // Функция обмена, отсылающая строку и принимающая результат
+    QString intWriteData(QString text); // Функция обмена, отсылающая строку и принимающая результат
 
     bool transfer_data = false; //если true, то запрет на передачу
     unsigned char errnum;  // Количество ошибочных обменов

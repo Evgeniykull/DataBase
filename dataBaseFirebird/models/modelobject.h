@@ -22,7 +22,7 @@ public slots:
     void addObject();
     void deleteObject(int);
     void editObject(int);
-    QByteArray getSettings(int);
+    QString getSettings(int);
     void setSettings(int, QString);
 
 private slots:

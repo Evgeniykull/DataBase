@@ -32,7 +32,7 @@ void ModelObject::deleteObject(int object_id) {
     tank_query->next();
     point_query->next();
 
-    if (tank_query->record().value(0) != 0 || point_query->record().value(0) != 0) {
+    if (tank_query->record().value(0).toInt() != 0 || point_query->record().value(0).toInt() != 0) {
         mBx->setWindowTitle("Удаление объекта");
         mBx->setText("У объекта есть зависимости");
         mBx->show();
@@ -88,12 +88,12 @@ void ModelObject::finishEditObject(QString objectId, QString name, QString pass)
     emit needUpdate();
 }
 
-QByteArray ModelObject::getSettings(int object_id) {
+QString ModelObject::getSettings(int object_id) {
     QSqlQuery* query = new QSqlQuery(data_base);
     QString statament = QString("SELECT CONNECTIONPROPERTY FROM OBJECT_TABLES WHERE OBJECTID=%1").arg(QString::number(object_id));
     query->exec(statament);
     query->next();
-    return query->record().value(0).toByteArray();
+    return query->record().value(0).toString();
 }
 
 void ModelObject::setSettings(int object_id, QString sett) {

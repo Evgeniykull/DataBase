@@ -78,7 +78,7 @@ private slots:
     void changedObject(QModelIndex);
     void setObjectSettings();
     void writeObjectSettings();
-    void changedObjectSettings(QByteArray);
+    void changedObjectSettings(QString);
 
     void updateHistory();
     void getHistory();

@@ -75,14 +75,14 @@ void AddPointsDialog::onButtonOkClick() {
 void AddPointsDialog::getTankMap() {
     tank_map = new QMap<int, QString>;
     QSqlQuery* query = new QSqlQuery(dataBase);
-    QString statament = QString("SELECT id from TANKS WHERE objectid=%1").arg(objectId);
+    QString statament = QString("SELECT id, SENDADDR, COMMENT from TANKS WHERE objectid=%1").arg(objectId);
     query->exec(statament);
 
     int i = 0;
     while(query->next()) {
-        tank_map->insert(query->record().value("id").toInt(),
-                         query->record().value("id").toString());
-        ui->cbTankId->insertItem(i, query->record().value("id").toString());
+        QString vis = query->record().value("SENDADDR").toString() + "-" + query->record().value("COMMENT").toString();
+        tank_map->insert(query->record().value("id").toInt(), vis);
+        ui->cbTankId->insertItem(i, vis);
         i += 1;
     }
 }

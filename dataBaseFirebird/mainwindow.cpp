@@ -9,6 +9,7 @@
 #include <QTimer>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QProgressDialog>
 #include <QDebug>
 
 #include "dialogs/adduserdialog.h"
@@ -584,7 +585,6 @@ void MainWindow::updateHistory() {
     ui->tableHistory->setColumnWidth(5, 500);
 }
 
-#include <QProgressDialog>
 void MainWindow::getHistory() {
     Port port(port_settings);
     int i;
@@ -595,7 +595,7 @@ void MainWindow::getHistory() {
 //
     if (!port.StartComm()) return;
 //синхронизируем время
-    QByteArray anw1 = port.write("get Состояние.Время");
+    QString anw1 = port.write("get Состояние.Время");
     QString dev_time = anw1.mid(anw1.indexOf("Время:")+12, 19);
     QString cur_dt = QDateTime::currentDateTime().toString("dd.MM.yyyy hh:mm:ss");
     qint64 sec1 = QDateTime::fromString(dev_time, "dd.MM.yyyy hh:mm:ss").toSecsSinceEpoch();
@@ -606,7 +606,7 @@ void MainWindow::getHistory() {
         port.write(com.toUtf8());
     }
 //
-    QByteArray anw; // Ответ
+    QString anw; // Ответ
     QSqlQuery* query = new QSqlQuery(db);
     QString statament = QString("SELECT max(hisid) FROM UNASSMHISTORY WHERE OBJECTID=%1").arg(azsNum);
     query->exec(statament);
@@ -615,7 +615,7 @@ void MainWindow::getHistory() {
     if (curid <= 0) {
       int end;
       anw = port.write("get История");
-      parseArray(anw,curid,end);
+      parseArray(anw.toUtf8(),curid,end);
     }
     anw = port.write("get Состояние.История");
 /*    json = conv.dataToJson(anw);
@@ -625,7 +625,7 @@ void MainWindow::getHistory() {
     len = obj["length"].toInt();*/
 
 
-    endid=getJSONField(anw,"Текущий").toInt();
+    endid=getJSONField(anw.toUtf8(),"Текущий").toInt();
     if (endid >= curid) {
 
       QProgressDialog *progr_dialog = new QProgressDialog("Считывание истории", "&Отмена", 0, endid-curid-1);
@@ -730,12 +730,12 @@ void MainWindow::changedObject(QModelIndex idx) {
     int objectid = model_object->record(idx.row()).value("objectid").toInt();
     azsNum = QString::number(objectid);
     accessCheck();
-    QByteArray sett_js = model_object->record(idx.row()).value("CONNECTIONPROPERTY").toByteArray();
+    QString sett_js = model_object->record(idx.row()).value("CONNECTIONPROPERTY").toByteArray();
     changedObjectSettings(sett_js);
 }
 
-void MainWindow::changedObjectSettings(QByteArray objSett) {
-    QJsonDocument doc = QJsonDocument::fromJson(objSett);
+void MainWindow::changedObjectSettings(QString objSett) {
+    QJsonDocument doc = QJsonDocument::fromJson(objSett.toUtf8());
     QJsonObject json_obj = doc.object();
     QString adr = json_obj["addres"].toString();
     QString br = QString::number(json_obj["baudRate"].toInt());
@@ -754,7 +754,7 @@ void MainWindow::setObjectSettings() {
     }
     ModelObject *object_model = new ModelObject(db);
     int objectid = model_object->record(idx).value("objectid").toInt();
-    QByteArray sett_js = object_model->getSettings(objectid);
+    QString sett_js = object_model->getSettings(objectid);
     if (sett_js.isEmpty()) {
         port_settings = new PortSettings();
         connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(writeObjectSettings()));
@@ -811,14 +811,14 @@ void MainWindow::startConfigurate() {
     QString statament = QString("SELECT ADMINPASSWORD FROM OBJECT_TABLES WHERE OBJECTID=%1").arg(azsNum);
     query->exec(statament);
     query->next();
-    QByteArray ps = query->value("ADMINPASSWORD").toByteArray();
+    QString ps = query->value("ADMINPASSWORD").toString();
 
     bool ok = port->changeAccess(1, ps);
 
     if (ok) {
         for(int i=0; i<fuel_data.length(); i++){
             allcount++;
-            QByteArray conf_answ = port->write(fuel_data.at(i).toUtf8());
+            QString conf_answ = port->write(fuel_data.at(i).toUtf8());
             if (conf_answ.indexOf("OK") < 0) {
                 qDebug() << "error on configurate fuel #" << i;
                 errcount++;
@@ -827,7 +827,7 @@ void MainWindow::startConfigurate() {
 
         for(int i=0; i<tank_data.length(); i++){
             allcount++;
-            QByteArray conf_answ = port->write(tank_data.at(i).toUtf8());
+            QString conf_answ = port->write(tank_data.at(i).toUtf8());
             if (conf_answ.indexOf("OK") < 0) {
                 qDebug() << "error on configurate tank #" << i;
                 errcount++;
@@ -836,7 +836,7 @@ void MainWindow::startConfigurate() {
 
         for(int i=0; i<point_data.length(); i++){
             allcount++;
-            QByteArray conf_answ = port->write(point_data.at(i).toUtf8());
+            QString conf_answ = port->write(point_data.at(i).toUtf8());
             if (conf_answ.indexOf("OK") < 0) {
                 qDebug() << "error on configurate point #" << i;
                 errcount++;
@@ -882,18 +882,18 @@ void MainWindow::getUserIndex() {
     QSqlQuery query(db);
     JsonConvertor conv;
     QString userNewLimits;
-    QByteArray user_answ;   // Ответ от устройства
+    QString user_answ;   // Ответ от устройства
     QString userNewData;
     if (!port.StartComm()) return;
 //QByteArray query = "get UserIndex";
-    QByteArray answ = port.write("get UserIndex");
+    QString answ = port.write("get UserIndex");
     int arr_start, arr_len;
-    parseArray(answ, arr_start, arr_len);
+    parseArray(answ.toUtf8(), arr_start, arr_len);
 
 // Перебираем все элементы массива индексов
     for (int i = arr_start; i < arr_start + arr_len; i++) {
-      QByteArray middle_answ = port.write("get UserIndex[" + QByteArray::number(i) + "]");
-      QString json = conv.dataToJson(middle_answ);
+      QString middle_answ = port.write("get UserIndex[" + QByteArray::number(i) + "]");
+      QString json = conv.dataToJson(middle_answ.toUtf8());
       QJsonObject obj = QJsonDocument::fromJson(json.toUtf8()).object();
       hd_indexes.append(obj["UserID"].toInt());
     }
@@ -978,7 +978,7 @@ void MainWindow::getUserCard() {
 void MainWindow::changeUserCard() {
     int state = 0;
     timer_end = 0;
-    QByteArray answ;
+    QString answ;
     QDateTime dt = QDateTime::currentDateTime();
     if (!card_reader->StartComm()) return;
     while (state < 1) {

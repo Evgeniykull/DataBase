@@ -13,7 +13,7 @@ class ModelLimit : public QObject
     Q_OBJECT
 public:
     explicit ModelLimit(QObject *parent = nullptr);
-    explicit ModelLimit(QSqlDatabase, QString, QObject *parent = nullptr);
+    explicit ModelLimit(QSqlDatabase, QObject *parent = nullptr);
 
 signals:
     void needUpdate();
@@ -22,6 +22,7 @@ public slots:
     void addLimits();
     void deleteLimits(int);
     void editLimits(int);
+    void setUserId(QString);
 
 private slots:
     void finishAddLimits(QString, QString, QString, QString);

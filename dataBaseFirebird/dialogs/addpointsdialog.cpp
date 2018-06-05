@@ -36,6 +36,7 @@ AddPointsDialog::AddPointsDialog(QString object_id, int point_id, QSqlDatabase d
         mess->setWindowTitle("Добавление колонки");
         mess->setText("Добавте сначала резервуар");
         mess->exec();
+        return;
     }
 
     QSqlQuery* query = new QSqlQuery(db);

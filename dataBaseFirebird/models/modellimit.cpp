@@ -8,10 +8,9 @@ ModelLimit::ModelLimit(QObject *parent) : QObject(parent)
 {
 }
 
-ModelLimit::ModelLimit(QSqlDatabase db, QString user_id, QObject *parent) : QObject(parent) {
+ModelLimit::ModelLimit(QSqlDatabase db, QObject *parent) : QObject(parent) {
     data_base = db;
     mBx = new QMessageBox();
-    userId = user_id;
 }
 
 void ModelLimit::addLimits() {
@@ -86,4 +85,8 @@ void ModelLimit::finishEditLimits(int limitsId, QString fuelName, QString value,
         query2->exec(statament2);
     }
     emit needUpdate();
+}
+
+void ModelLimit::setUserId(QString user_id) {
+    userId = user_id;
 }

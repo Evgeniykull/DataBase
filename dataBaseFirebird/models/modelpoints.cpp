@@ -8,9 +8,8 @@ ModelPoints::ModelPoints(QObject *parent) : QObject(parent)
 {
 }
 
-ModelPoints::ModelPoints(QSqlDatabase db, QString azsNum, QObject *parent) : QObject(parent) {
+ModelPoints::ModelPoints(QSqlDatabase db, QObject *parent) : QObject(parent) {
     data_base = db;
-    azs_num = azsNum;
     mBx = new QMessageBox();
 }
 
@@ -76,6 +75,10 @@ void ModelPoints::finishEditPoint(int pointId, int dispsId, int sendAddr, int ta
         mBx->show();
     }
     emit needUpdate();
+}
+
+void ModelPoints::setAzsNum(QString azsNum) {
+    azs_num = azsNum;
 }
 
 #include <QSet>

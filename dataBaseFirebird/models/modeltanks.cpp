@@ -7,9 +7,8 @@ ModelTanks::ModelTanks(QObject *parent) : QObject(parent)
 {
 }
 
-ModelTanks::ModelTanks(QSqlDatabase db, QString azsNum, QObject *parent) : QObject(parent) {
+ModelTanks::ModelTanks(QSqlDatabase db, QObject *parent) : QObject(parent) {
     data_base = db;
-    azs_num = azsNum;
     mBx = new QMessageBox();
 }
 
@@ -73,6 +72,10 @@ void ModelTanks::finishEditTanks(int id, int fuelId, int addr, QString comment) 
         mBx->show();
     }
     emit needUpdate();
+}
+
+void ModelTanks::setAzsNum(QString azsNum) {
+    azs_num = azsNum;
 }
 
 QList<QString> ModelTanks::configureTanks() {

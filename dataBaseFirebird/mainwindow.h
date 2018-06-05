@@ -12,8 +12,16 @@
 #include <QCloseEvent>
 #include <QMessageBox>
 #include <QJsonObject>
+
 #include "port/port.h"
 #include "port/portsettings.h"
+#include "models/modeluser.h"
+#include "models/modelfuels.h"
+#include "models/modeltanks.h"
+#include "models/modelpoints.h"
+#include "models/modellimit.h"
+#include "models/modelobject.h"
+#include "dialogs/getcarddialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -97,6 +105,8 @@ private slots:
     void changeAccess();
     void accessCheck();
 
+    void declOfVaribles();
+
     //my Всякие дополнительные полезные функции
     void getUserIndex();
     void parseArray(QByteArray, int&, int&);
@@ -140,6 +150,15 @@ private slots:
     QMessageBox *mbx;
 
     bool isAdmin = false;
+
+    //new
+    ModelUser *add_user_model;
+    ModelFuels *add_fuel_model;
+    ModelTanks *add_tank_model;
+    ModelPoints *add_point_model;
+    ModelLimit *add_limits_model;
+    ModelObject *add_object_model;
+    GetCardDialog *card_dialog;
 };
 
 #endif // MAINWINDOW_H

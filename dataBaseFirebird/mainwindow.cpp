@@ -13,13 +13,6 @@
 #include <QDebug>
 
 #include "dialogs/adduserdialog.h"
-#include "dialogs/getcarddialog.h"
-#include "models/modeluser.h"
-#include "models/modelfuels.h"
-#include "models/modeltanks.h"
-#include "models/modelpoints.h"
-#include "models/modellimit.h"
-#include <models/modelobject.h>
 #include "utils/treadworker.h"
 #include "utils/jsonconvertor.h"
 #include "utils/utils.h"
@@ -107,6 +100,40 @@ void MainWindow::renderToolbar() {
 
     connect(ui->pbGetUserCard, SIGNAL(clicked(bool)), SLOT(getUserCard()));
     connect(ui->cbAdminAccess, SIGNAL(clicked(bool)), SLOT(changeAccess()));
+}
+
+void MainWindow::declOfVaribles() {
+    model_users = new QSqlRelationalTableModel(0, db);
+    model_users->setTable("users");
+    model_users->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    add_user_model = new ModelUser(db);
+    connect(add_user_model, SIGNAL(needUpdate()), SLOT(updateUsers()));
+
+    model_fuels = new QSqlRelationalTableModel(0, db);
+    model_fuels->setTable("fuels");
+    model_fuels->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    add_fuel_model = new ModelFuels(db);
+    connect(add_fuel_model, SIGNAL(needUpdate()), SLOT(updateFuels()));
+
+    model_tanks = new QSqlRelationalTableModel(0, db);
+    model_limits = new QSqlRelationalTableModel(0, db);
+    model_history = new QSqlRelationalTableModel(0, db);
+
+    model_object = new QSqlRelationalTableModel(0, db);
+    add_object_model = new ModelObject(db);
+    connect(add_object_model, SIGNAL(needUpdate()), SLOT(updateObject()));
+
+    card_dialog = new GetCardDialog();
+    connect(card_dialog, SIGNAL(onAcceptClick()), this, SLOT(changeUserCard()));
+
+    add_tank_model = new ModelTanks(db);
+    add_point_model = new ModelPoints(db);
+
+    add_limits_model = new ModelLimit(db);
+    connect(add_limits_model, SIGNAL(needUpdate()), SLOT(updateLimits()));
+    model_points = new QSqlRelationalTableModel(0, db);
+
+    mbx = new QMessageBox();
 }
 
 void MainWindow::currentTabChanged(int tabNum) {
@@ -291,6 +318,9 @@ void MainWindow::onConnectClick() {
 
         ui->tabWidget->setCurrentIndex(2);
     }
+    //по идее нужно удалять model при каждом подключении,
+    //но если сейчас подключиться к другой базе можно только при входе, то все ок
+    declOfVaribles();
 }
 
 void setTableFormat(QTableView *tab, int autoresize = 1)
@@ -307,34 +337,25 @@ void setTableFormat(QTableView *tab, int autoresize = 1)
 }
 
 void MainWindow::updateUsers() {
-    model_users = new QSqlRelationalTableModel(0, db);
-    model_users->setTable("users");
-    model_users->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model_users->select();
-
+    //пока treeModel оставлю
     model = new TreeModel(*model_users, ui->teUserInfo);
     ui->treeView->setModel(model);
     connect(ui->treeView, SIGNAL(clicked(QModelIndex)), model, SLOT(Clicked(QModelIndex)));
-    //отслеживать изменение info
-    //connect(ui->treeView, SIGNAL(clicked(QModelIndex)), SLOT(onUserClick(QModelIndex)));
     ui->teUserInfo->clear();
+    //ui->tableLimits->clearSelection();
 }
 
 void MainWindow::onAddUsersClick() {
-    ModelUser *user_model = new ModelUser(db);
-    connect(user_model, SIGNAL(needUpdate()), SLOT(updateUsers()));
-    user_model->addUser();
+    add_user_model->addUser();
 }
 
 void MainWindow::onEditUsersClick() {
     if (ui->treeView->currentIndex().row() < 0) {
         return;
     }
-
     int userid = ui->teUserInfo->toPlainText().split("\n").at(0).split(":")[1].toInt();
-    ModelUser *user_model = new ModelUser(db);
-    connect(user_model, SIGNAL(needUpdate()), SLOT(updateUsers()));
-    user_model->editUsers(userid);
+    add_user_model->editUsers(userid);
 }
 
 //TODO добавить подтверждение
@@ -345,24 +366,17 @@ void MainWindow::deleteUsers()
     }
 
     int userid = ui->teUserInfo->toPlainText().split("\n").at(0).split(":")[1].toInt();
-    ModelUser *user_model = new ModelUser(db);
-    connect(user_model, SIGNAL(needUpdate()), SLOT(updateUsers()));
-    user_model->deleteUsers(userid);
+    add_user_model->deleteUsers(userid);
 }
 
 void MainWindow::updateFuels() {
-    model_fuels = new QSqlRelationalTableModel(0, db);
-    model_fuels->setTable("fuels");
-    model_fuels->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model_fuels->select();
     ui->tableFuel->setModel(model_fuels);
     setTableFormat(ui->tableFuel);
 }
 
 void MainWindow::addFuels() {
-    ModelFuels *fuel_model = new ModelFuels(db);
-    connect(fuel_model, SIGNAL(needUpdate()), SLOT(updateFuels()));
-    fuel_model->addFuels();
+    add_fuel_model->addFuels();
 }
 
 void MainWindow::deleteFuels() {
@@ -370,11 +384,8 @@ void MainWindow::deleteFuels() {
     if (idx < 0) {
         return;
     }
-
-    ModelFuels *fuel_model = new ModelFuels(db);
-    connect(fuel_model, SIGNAL(needUpdate()), SLOT(updateFuels()));
     int fuelid = model_fuels->record(idx).value("fueldid").toInt();
-    fuel_model->deleteFuels(fuelid);
+    add_fuel_model->deleteFuels(fuelid);
 }
 
 void MainWindow::onEditFuelsClick() {
@@ -382,15 +393,12 @@ void MainWindow::onEditFuelsClick() {
     if (idx < 0) {
         return;
     }
-
-    ModelFuels *fuel_model = new ModelFuels(db);
-    connect(fuel_model, SIGNAL(needUpdate()), SLOT(updateFuels()));
     int fuelid = model_fuels->record(idx).value("fueldid").toInt();
-    fuel_model->editFuels(fuelid);
+    add_fuel_model->editFuels(fuelid);
 }
 
+//передается azsNum, оно меняется!
 void MainWindow::updateTanks() {
-    model_tanks = new QSqlRelationalTableModel(0, db);
     model_tanks->setTable("tanks");
     model_tanks->setRelation(1, QSqlRelation("FUELS", "FUELDID", "NAME"));
     model_tanks->setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -402,10 +410,11 @@ void MainWindow::updateTanks() {
     setTableFormat(ui->tableTanks);
 }
 
+//передается azsNum, оно меняется!
 void MainWindow::addTanks() {
-    ModelTanks *tank_model = new ModelTanks(db, azsNum);
-    connect(tank_model, SIGNAL(needUpdate()), SLOT(updateTanks()));
-    tank_model->addTanks();
+    add_tank_model->setAzsNum(azsNum);
+    connect(add_tank_model, SIGNAL(needUpdate()), SLOT(updateTanks()));
+    add_tank_model->addTanks();
 }
 
 void MainWindow::deleteTanks() {
@@ -415,11 +424,9 @@ void MainWindow::deleteTanks() {
         return;
     }
 
-    ModelTanks *tanks_model = new ModelTanks(db, azsNum);
-    connect(tanks_model, SIGNAL(needUpdate()), SLOT(updateTanks()));
-    //а если рекорд достать через QModelIndex?
+    add_tank_model->setAzsNum(azsNum);
     int tankid = model_tanks->record(idx).value("id").toInt();
-    tanks_model->deleteTanks(tankid);
+    add_tank_model->deleteTanks(tankid);
 }
 
 void MainWindow::onEditTanksClick() {
@@ -427,13 +434,12 @@ void MainWindow::onEditTanksClick() {
     if (idx < 0) {
         return;
     }
-
-    ModelTanks *tanks_model = new ModelTanks(db, azsNum);
-    connect(tanks_model, SIGNAL(needUpdate()), SLOT(updateTanks()));
+    add_tank_model->setAzsNum(azsNum);
     int tankid = model_tanks->record(idx).value("id").toInt();
-    tanks_model->editTanks(tankid);
+    add_tank_model->editTanks(tankid);
 }
 
+//передается azsNum, оно меняется!
 void MainWindow::updatePoints() {
     QSqlQuery* query = new QSqlQuery(db);
     QString statament = QString("SELECT dispsid from POINTS WHERE objectid=%1").arg(azsNum);
@@ -452,7 +458,6 @@ void MainWindow::updatePoints() {
     }
     //ui->cbTankNum->setCurrentText(pointNum);
 
-    model_points = new QSqlRelationalTableModel(0, db);
     model_points->setTable("points");
     model_points->setEditStrategy(QSqlTableModel::OnManualSubmit);
     QString filter = QString("objectid=%1 and dispsid=%2").arg(azsNum).arg(pointNum);
@@ -461,12 +466,13 @@ void MainWindow::updatePoints() {
     ui->tablePoints->setModel(model_points);
     ui->tablePoints->setColumnHidden(1, true);
     setTableFormat(ui->tablePoints);
+    delete query;
 }
 
+//передается azsNum, оно меняется!
 void MainWindow::addPoints() {
-    ModelPoints *point_model = new ModelPoints(db, azsNum);
-    connect(point_model, SIGNAL(needUpdate()), SLOT(updatePoints()));
-    point_model->addPoint();
+    add_point_model->setAzsNum(azsNum);
+    add_point_model->addPoint();
 }
 
 void MainWindow::deletePoints() {
@@ -475,11 +481,9 @@ void MainWindow::deletePoints() {
     if (idx < 0) {
         return;
     }
-
-    ModelPoints *point_model = new ModelPoints(db, azsNum);
-    connect(point_model, SIGNAL(needUpdate()), SLOT(updatePoints()));
     int pointid = model_points->record(idx).value("id").toInt();
-    point_model->deletePoint(pointid);
+    add_point_model->setAzsNum(azsNum);
+    add_point_model->deletePoint(pointid);
 }
 
 void MainWindow::onEditPointsClick() {
@@ -487,11 +491,9 @@ void MainWindow::onEditPointsClick() {
     if (idx < 0) {
         return;
     }
-
-    ModelPoints *point_model = new ModelPoints(db, azsNum);
-    connect(point_model, SIGNAL(needUpdate()), SLOT(updatePoints()));
     int pointid = model_points->record(idx).value("id").toInt();
-    point_model->editPoint(pointid);
+    add_point_model->setAzsNum(azsNum);
+    add_point_model->editPoint(pointid);
 }
 
 void MainWindow::changeCurrentPointNum() {
@@ -509,7 +511,6 @@ void MainWindow::updateLimits() {
         return;
     }
 
-    model_limits = new QSqlRelationalTableModel(0, db);
     model_limits->setTable("limits");
     model_limits->setRelation(2, QSqlRelation("FUELS", "FUELDID", "NAME"));
     model_limits->setEditStrategy(QSqlTableModel::OnManualSubmit);
@@ -521,6 +522,7 @@ void MainWindow::updateLimits() {
     setTableFormat(ui->tableLimits);
 }
 
+//переменная неизвестна вначале!
 void MainWindow::addLimits() {
     QString info_text = ui->teUserInfo->toPlainText();
     if (info_text.isEmpty()) return;
@@ -528,10 +530,8 @@ void MainWindow::addLimits() {
     int pos2 = info_text.indexOf("\n");
     QString user_id = info_text.mid(pos1+2, pos2-pos1-2);
     if (user_id.isEmpty()) return;
-
-    ModelLimit *limits_modes = new ModelLimit(db, user_id);
-    connect(limits_modes, SIGNAL(needUpdate()), SLOT(updateLimits()));
-    limits_modes->addLimits();
+    add_limits_model->setUserId(user_id);
+    add_limits_model->addLimits();
 }
 
 void MainWindow::deleteLimits() {
@@ -548,10 +548,9 @@ void MainWindow::deleteLimits() {
     QString user_id = info_text.mid(pos1+2, pos2-pos1-2);
     if (user_id.isEmpty()) return;
 
-    ModelLimit *limits_model = new ModelLimit(db, user_id);
-    connect(limits_model, SIGNAL(needUpdate()), SLOT(updateLimits()));
     int limitsid = model_limits->record(idx).value("id").toInt();
-    limits_model->deleteLimits(limitsid);
+    add_limits_model->setUserId(user_id);
+    add_limits_model->deleteLimits(limitsid);
 }
 
 void MainWindow::editLimits() {
@@ -567,14 +566,12 @@ void MainWindow::editLimits() {
     QString user_id = info_text.mid(pos1+2, pos2-pos1-2);
     if (user_id.isEmpty()) return;
 
-    ModelLimit *limit_model = new ModelLimit(db, user_id);
-    connect(limit_model, SIGNAL(needUpdate()), SLOT(updateLimits()));
     int limitid = model_limits->record(idx).value("id").toInt();
-    limit_model->editLimits(limitid);
+    add_limits_model->setUserId(user_id);
+    add_limits_model->editLimits(limitid);
 }
 
 void MainWindow::updateHistory() {
-    model_history = new QSqlRelationalTableModel(0, db);
     model_history->setTable("UNASSMHISTORY");
     model_history->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model_history->select();
@@ -675,6 +672,7 @@ void MainWindow::getHistory() {
         }
     }
     delete progr_dialog;
+    delete query;
 // запись на устройство кол-во РЕАЛЬНО считанных данных
 // работает даже если нажали "ОТМЕНУ"
     if (i>0) port.write(QString("run ЧтИстория:{Считано:%1}").arg(i-1).toUtf8());
@@ -684,7 +682,6 @@ void MainWindow::getHistory() {
 }
 
 void MainWindow::updateObject() {
-    model_object = new QSqlRelationalTableModel(0, db);
     model_object->setTable("OBJECT_TABLES");
     model_object->setEditStrategy(QSqlTableModel::OnManualSubmit);
     model_object->select();
@@ -697,9 +694,7 @@ void MainWindow::updateObject() {
 }
 
 void MainWindow::addObject() {
-    ModelObject *object_model = new ModelObject(db);
-    connect(object_model, SIGNAL(needUpdate()), SLOT(updateObject()));
-    object_model->addObject();
+    add_object_model->addObject();
 }
 
 void MainWindow::deleteObject() {
@@ -707,11 +702,8 @@ void MainWindow::deleteObject() {
     if (idx < 0) {
         return;
     }
-
-    ModelObject *object_model = new ModelObject(db);
-    connect(object_model, SIGNAL(needUpdate()), SLOT(updateObject()));
     int objectid = model_object->record(idx).value("objectid").toInt();
-    object_model->deleteObject(objectid);
+    add_object_model->deleteObject(objectid);
 }
 
 void MainWindow::editObject() {
@@ -719,11 +711,8 @@ void MainWindow::editObject() {
     if (idx < 0) {
         return;
     }
-
-    ModelObject *object_model = new ModelObject(db);
-    connect(object_model, SIGNAL(needUpdate()), SLOT(updateObject()));
     int objectid = model_object->record(idx).value("objectid").toInt();
-    object_model->editObject(objectid);
+    add_object_model->editObject(objectid);
 }
 
 void MainWindow::changedObject(QModelIndex idx) {
@@ -734,6 +723,7 @@ void MainWindow::changedObject(QModelIndex idx) {
     changedObjectSettings(sett_js);
 }
 
+//тоже пока оставлю new
 void MainWindow::changedObjectSettings(QString objSett) {
     QJsonDocument doc = QJsonDocument::fromJson(objSett.toUtf8());
     QJsonObject json_obj = doc.object();
@@ -747,14 +737,14 @@ void MainWindow::changedObjectSettings(QString objSett) {
     port_settings = new PortSettings(adr, br, db, na, pa, sb);
 }
 
+// !!!
 void MainWindow::setObjectSettings() {
     int idx = ui->tableObject->currentIndex().row();
     if (idx < 0) {
         return;
     }
-    ModelObject *object_model = new ModelObject(db);
     int objectid = model_object->record(idx).value("objectid").toInt();
-    QString sett_js = object_model->getSettings(objectid);
+    QString sett_js = add_object_model->getSettings(objectid);
     if (sett_js.isEmpty()) {
         port_settings = new PortSettings();
         connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(writeObjectSettings()));
@@ -767,7 +757,6 @@ void MainWindow::setObjectSettings() {
 }
 
 void MainWindow::writeObjectSettings() {
-    ModelObject *object_model = new ModelObject(db);
     QJsonObject sett_json {
         {"addres", port_settings->SettingsPort.addres},
         {"baudRate", port_settings->SettingsPort.baudRate},
@@ -780,23 +769,21 @@ void MainWindow::writeObjectSettings() {
     };
     QJsonDocument doc(sett_json);
     QString strJson(doc.toJson(QJsonDocument::Compact));
-    object_model->setSettings(azsNum.toInt(), strJson);
+    add_object_model->setSettings(azsNum.toInt(), strJson);
 }
 
 void MainWindow::startConfigurate() {
     int errcount=0;
     int allcount=0;
-    ModelFuels *fuel_model = new ModelFuels(db);
-    QList<QString> fuel_data = fuel_model->configureFuels();
+    QList<QString> fuel_data = add_fuel_model->configureFuels();
 
-    ModelTanks *tank_model = new ModelTanks(db, azsNum);
-    QList<QString> tank_data = tank_model->configureTanks();
+    add_tank_model->setAzsNum(azsNum);
+    QList<QString> tank_data = add_tank_model->configureTanks();
 
-    ModelPoints *point_model = new ModelPoints(db, azsNum);
-    QList<QString> point_data = point_model->configurePoints();
+    add_point_model->setAzsNum(azsNum);
+    QList<QString> point_data = add_point_model->configurePoints();
 
     if (fuel_data.isEmpty() || tank_data.isEmpty() || point_data.isEmpty()) {
-        mbx = new QMessageBox();
         mbx->setWindowTitle("Конфигурация");
         mbx->setText("Таблицы FUEL, TANK, POINT пустые");
         mbx->exec();
@@ -843,7 +830,6 @@ void MainWindow::startConfigurate() {
             }
         }
         port->changeAccess(0,"");
-        mbx = new QMessageBox();
         mbx->setWindowTitle("Конфигурация");
         if (errcount==0) {
           mbx->setText("Конфигурация прошла успешно");
@@ -853,21 +839,21 @@ void MainWindow::startConfigurate() {
         mbx->exec();
 
     } else {
-        mbx = new QMessageBox();
         mbx->setWindowTitle("Конфигурация");
         mbx->setText("Не удалось перевести устройство в режим администратора");
         mbx->exec();
     }
+    delete query;
     port->EndComm();
 }
 
 QString convertData(QString data) {
-    QString newData = data.split("-")[2];
-    newData.append(".");
-    newData.append(data.split("-")[1]);
-    newData.append(".");
-    newData.append(data.split("-")[0]);
-    return newData;
+    QString _Data = data.split("-")[2];
+    _Data.append(".");
+    _Data.append(data.split("-")[1]);
+    _Data.append(".");
+    _Data.append(data.split("-")[0]);
+    return _Data;
 }
 
 ////////////////////////////////
@@ -969,9 +955,6 @@ void MainWindow::getUserCard() {
     int len = pos2 - pos1;
     QString subInf = info.mid(pos1+2, len-2);
     selected_user_id = subInf.toInt();
-
-    GetCardDialog *card_dialog = new GetCardDialog();
-    connect(card_dialog, SIGNAL(onAcceptClick()), this, SLOT(changeUserCard()));
     card_dialog->show();
 }
 
@@ -1002,6 +985,7 @@ void MainWindow::changeUserCard() {
       if (change_card_id_query->lastError().isValid()) {
           qDebug() << change_card_id_query->lastError().databaseText();
       }
+      delete change_card_id_query;
 
       QString convertCartInt = getCartMemoryData(card_id.toInt());
       QString cart_data = convertCartInt + "00000000" + getCartMemoryData(selected_user_id) + "01000000";
@@ -1050,7 +1034,6 @@ QString MainWindow::getCartMemoryData(int k) {
     QString subD = int_16.right(2);
 
     QString finally = subA + subB + subC + subD;
-    //qDebug() << subA << subB << subC << subD;
     return finally;
 }
 

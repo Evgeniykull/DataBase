@@ -35,6 +35,7 @@ AddTanksDialog::AddTanksDialog(int tank_id, QSqlDatabase db, QWidget *parent) :
         mess->setWindowTitle("Добавление резервуара");
         mess->setText("Добавте сначала топлива");
         mess->exec();
+        return;
     }
 
     QSqlQuery* query = new QSqlQuery(db);

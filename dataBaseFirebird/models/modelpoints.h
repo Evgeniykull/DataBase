@@ -12,7 +12,7 @@ class ModelPoints : public QObject
     Q_OBJECT
 public:
     explicit ModelPoints(QObject *parent = nullptr);
-    explicit ModelPoints(QSqlDatabase, QString, QObject *parent = nullptr);
+    explicit ModelPoints(QSqlDatabase, QObject *parent = nullptr);
 
 signals:
     void needUpdate();
@@ -21,6 +21,7 @@ public slots:
     void addPoint();
     void deletePoint(int);
     void editPoint(int);
+    void setAzsNum(QString);
     QList<QString> configurePoints();
 
 private slots:

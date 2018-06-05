@@ -13,7 +13,7 @@ class ModelTanks : public QObject
     Q_OBJECT
 public:
     explicit ModelTanks(QObject *parent = nullptr);
-    explicit ModelTanks(QSqlDatabase, QString, QObject *parent = nullptr);
+    explicit ModelTanks(QSqlDatabase, QObject *parent = nullptr);
 
 signals:
     void needUpdate();
@@ -22,6 +22,7 @@ public slots:
     void addTanks();
     void deleteTanks(int);
     void editTanks(int);
+    void setAzsNum(QString);
     QList<QString> configureTanks();
 
 private slots:

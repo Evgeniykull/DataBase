@@ -81,7 +81,7 @@ void ModelPoints::setAzsNum(QString azsNum) {
     azs_num = azsNum;
 }
 
-#include <QSet>
+/*#include <QSet>
 QList<QString> ModelPoints::configurePoints() {
     QList<QString> *fnsh = new QList<QString>;
     QSet<int> *disps_id_set = new QSet<int>;
@@ -140,4 +140,4 @@ QList<QString> ModelPoints::configurePoints() {
     }
 
     return *fnsh;
-}
+}*/

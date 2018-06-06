@@ -23,7 +23,7 @@ public slots:
     void deleteTanks(int);
     void editTanks(int);
     void setAzsNum(QString);
-    QList<QString> configureTanks();
+//    QList<QString> configureTanks();
 
 private slots:
     void finishAddTanks(int, int, QString);

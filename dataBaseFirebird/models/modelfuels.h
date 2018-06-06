@@ -22,7 +22,7 @@ public slots:
     void addFuels();
     void deleteFuels(int);
     void editFuels(int);
-    QList<QString> configureFuels();
+//    QList<QString> configureFuels();
 
 private slots:
     void finishAddFuels(QString, QString, QString);

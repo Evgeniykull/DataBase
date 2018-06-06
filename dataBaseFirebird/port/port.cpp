@@ -56,6 +56,7 @@ Port::Port(PortSettings *ps, QWidget *parent) :
 Port::~Port()
 {
     closePort();  // На всякий случай и для возможности раннего выхода при использовании статического создания
+    delete port;  // Освобождаем память
     delete ui;
 }
 
@@ -285,6 +286,7 @@ QString Port::intWriteData(QString text) {
   int n;
   QByteArray senddata;
   QByteArray rd_data;
+  QByteArray data;
 //  QByteArray getdata;
 // Это здесь делать некорректно, логика неправильная - и тем более возвращать пустую строку
   if (transfer_data) {
@@ -295,9 +297,8 @@ QString Port::intWriteData(QString text) {
   }
 // Перекодировали в CP1251 - хорошо
   QTextCodec *codec1 = QTextCodec::codecForName( "CP1251" );
-  text = codec1->fromUnicode(QString(text));
+  data = codec1->fromUnicode(text.toUtf8());
 //Подготавливаем данные - при пустой строке возвращаем пустую строку - логично.
-  QString data = text;
   int data_len = data.length();
   if (data_len == 0) {
     transfer_data=false;

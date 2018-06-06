@@ -71,7 +71,7 @@ void ModelFuels::finishEditFuels(int fuelId, QString name, QString viewName, QSt
     emit needUpdate();
 }
 
-QList<QString> ModelFuels::configureFuels() {
+/*QList<QString> ModelFuels::configureFuels() {
     QList<QString> *fnsh = new QList<QString>;
     QSqlQuery* query = new QSqlQuery(data_base);
     QString statament = "SELECT * FROM fuels";
@@ -103,3 +103,4 @@ QList<QString> ModelFuels::configureFuels() {
 
     return *fnsh;
 }
+*/

@@ -441,18 +441,18 @@ void MainWindow::onEditTanksClick() {
 
 //передается azsNum, оно меняется!
 void MainWindow::updatePoints() {
-    QSqlQuery* query = new QSqlQuery(db);
+    QSqlQuery query(db);
     QString statament = QString("SELECT dispsid from POINTS WHERE objectid=%1").arg(azsNum);
-    query->exec(statament);
+    query.exec(statament);
 
     int i = 0;
     //ui->cbTankNum->clear(); //no!
-    while(query->next()) {
-        if (ui->cbTankNum->findText(query->record().value("dispsid").toString()) == -1) {
-            ui->cbTankNum->insertItem(i, query->record().value("dispsid").toString());
+    while(query.next()) {
+        if (ui->cbTankNum->findText(query.record().value("dispsid").toString()) == -1) {
+            ui->cbTankNum->insertItem(i, query.record().value("dispsid").toString());
         }
         if (pointNum.isEmpty()) {
-            pointNum = query->record().value("dispsid").toString();
+            pointNum = query.record().value("dispsid").toString();
         }
         i += 1;
     }
@@ -466,7 +466,7 @@ void MainWindow::updatePoints() {
     ui->tablePoints->setModel(model_points);
     ui->tablePoints->setColumnHidden(1, true);
     setTableFormat(ui->tablePoints);
-    delete query;
+//    delete query;
 }
 
 //передается azsNum, оно меняется!
@@ -775,76 +775,138 @@ void MainWindow::writeObjectSettings() {
 void MainWindow::startConfigurate() {
     int errcount=0;
     int allcount=0;
-    QList<QString> fuel_data = add_fuel_model->configureFuels();
+    QString conf_answ;
+    QSqlQuery query(db);  // Запрос к БД
+    int i; // Для перебора
+    float pr;
+    Port port(port_settings);
+    QSet<int> disps_id_set;    // Список сторон
+    if (!port.StartComm()) return;
+    query.exec(QString("SELECT ADMINPASSWORD FROM OBJECT_TABLES WHERE OBJECTID=%1").arg(azsNum));
+    query.next();
+    QString ps = query.value("ADMINPASSWORD").toString();
+    if (port.changeAccess(1, ps)) {
+// Записываем топлива
+      query.exec("SELECT FUELDID,PRICE,VIEWNAME FROM FUELS ORDER BY FUELDID");
+      i=0;
+      while(query.next()) {
+          QString data = QString("set Установки.ВидыТоплива[%1]:").arg(QString::number(i));
+          pr=query.value("PRICE").toFloat();
+          QString json_data = QString("{Топливо:%1 Цена:%2 Наименование:\"%3\"}")
+                  .arg(query.value("FUELDID").toString())
+                  .arg(QString::number(pr))
+                  .arg(query.value("VIEWNAME").toString());
+          data += json_data;
+// В data - строка для обмена
+          allcount++;
+          conf_answ = port.write(data);
+          if (conf_answ.indexOf("OK") < 0) {
+              qDebug() << "error on configurate fuel #" << i;
+              errcount++;
+          }
+          i++;
+          if (i == 8) break;
+      }
+      while (i < 8) {
+          QString data = QString("set Установки.Резервуары[%1]:{Резервуар:0 Топливо:0 Адрес:0}").arg(QString::number(i));
+          port.write(data);
+          i++;
+      }
+// Записываем резервуары
+      query.exec(QString("SELECT ID,FUELID,SENDADDR FROM tanks WHERE OBJECTID=%1 ORDER BY ID").arg(azsNum));
+      i=0;
+      while(query.next()) {
+          QString data = QString("set Установки.Резервуары[%1]:").arg(QString::number(i));
+          QString json_data = QString("{Резервуар:%1 Топливо:%2 Адрес:%3}")
+                  .arg(query.value(0).toString())
+                  .arg(query.value(1).toString())
+                  .arg(query.value(2).toString());
+          data += json_data;
+// В data - строка для обмена
+          allcount++;
+          conf_answ = port.write(data);
+          if (conf_answ.indexOf("OK") < 0) {
+              qDebug() << "error on configurate tank #" << i;
+              errcount++;
+          }
+          i++;
+          if (i == 8) {
+              break;
+          }
+      }
+      while (i < 8) {
+          QString data = QString("set Установки.Резервуары[%1]:{Резервуар:0 Топливо:0 Адрес:0}").arg(QString::number(i));
+          port.write(data);
+          i++;
+      }
+// Записываем колонки
+      query.exec(QString("SELECT DISPSID FROM points WHERE OBJECTID=%1").arg(azsNum));
+      while(query.next()) {
+          disps_id_set.insert(query.value("DISPSID").toInt());
+      }
+      QList<int> disps_id_list = disps_id_set.toList();
+      int p = 0;
+      for (int i=0; i<disps_id_list.size(); i++) {
+          p++;
+          query.exec((QString("SELECT WORKFLAG, SENDADDR, TANKID FROM points WHERE dispsid=%1 AND OBJECTID=%2").arg(disps_id_list[i]).arg(azsNum)));
+  //
+          QString data = QString("set Установки.Колонки[%1]:{Рукава[]:[").arg(QString::number(i));
+          QString mid_data="";
+          int j = 0;
+          while(query.next()) {
+              j++;
+              mid_data += QString("{Работа:%1 Адрес:%2 Резервуар:%3},")
+                      .arg(query.value("WORKFLAG").toString())
+                      .arg(query.value("SENDADDR").toString())
+                      .arg(query.value("TANKID").toString());
+              if (j == 5) {
+                  break;
+              }
+          }
+          while (j < 5) {
+              mid_data += "{Работа:0 Адрес:0 Резервуар:0},";
+              j++;
+          }
+          mid_data = mid_data.mid(0, mid_data.length()-1);
+          data += mid_data;
+          data.append("]}");
 
-    add_tank_model->setAzsNum(azsNum);
-    QList<QString> tank_data = add_tank_model->configureTanks();
+          allcount++;
+          conf_answ = port.write(data);
+          if (conf_answ.indexOf("OK") < 0) {
+              qDebug() << "error on configurate point #" << i;
+              errcount++;
+          }
+          if (p == 12) {
+              break;
+          }
+      }
 
-    add_point_model->setAzsNum(azsNum);
-    QList<QString> point_data = add_point_model->configurePoints();
+      while (p < 12) {
+          QString data = QString("set Установки.Колонки[%1]:{Рукава[]:[").arg(QString::number(p));
+          for (int i=0; i<5; i++) {
+              data+= "{Работа:0 Адрес:0 Резервуар:0},";
+          }
+          data = data.mid(0, data.length()-1);
+          data.append("]}");
+          port.write(data);
+          p++;
+      }
 
-    if (fuel_data.isEmpty() || tank_data.isEmpty() || point_data.isEmpty()) {
-        mbx->setWindowTitle("Конфигурация");
-        mbx->setText("Таблицы FUEL, TANK, POINT пустые");
-        mbx->exec();
-        qDebug() << "BD not connected!";
-        return;
-    }
-
-    port = new Port(port_settings);
-    if (!port->StartComm()) return;
-
-    QSqlQuery* query = new QSqlQuery(db);
-    QString statament = QString("SELECT ADMINPASSWORD FROM OBJECT_TABLES WHERE OBJECTID=%1").arg(azsNum);
-    query->exec(statament);
-    query->next();
-    QString ps = query->value("ADMINPASSWORD").toString();
-
-    bool ok = port->changeAccess(1, ps);
-
-    if (ok) {
-        for(int i=0; i<fuel_data.length(); i++){
-            allcount++;
-            QString conf_answ = port->write(fuel_data.at(i).toUtf8());
-            if (conf_answ.indexOf("OK") < 0) {
-                qDebug() << "error on configurate fuel #" << i;
-                errcount++;
-            }
-        }
-
-        for(int i=0; i<tank_data.length(); i++){
-            allcount++;
-            QString conf_answ = port->write(tank_data.at(i).toUtf8());
-            if (conf_answ.indexOf("OK") < 0) {
-                qDebug() << "error on configurate tank #" << i;
-                errcount++;
-            }
-        }
-
-        for(int i=0; i<point_data.length(); i++){
-            allcount++;
-            QString conf_answ = port->write(point_data.at(i).toUtf8());
-            if (conf_answ.indexOf("OK") < 0) {
-                qDebug() << "error on configurate point #" << i;
-                errcount++;
-            }
-        }
-        port->changeAccess(0,"");
-        mbx->setWindowTitle("Конфигурация");
-        if (errcount==0) {
-          mbx->setText("Конфигурация прошла успешно");
-        } else {
-          mbx->setText("Конфигурация прошла с ошибками");
-        }
-        mbx->exec();
-
+      port.changeAccess(0,"");
+      mbx->setWindowTitle("Конфигурация");
+      if (errcount==0) {
+        mbx->setText("Конфигурация прошла успешно");
+      } else {
+        mbx->setText("Конфигурация прошла с ошибками");
+      }
+      mbx->exec();
     } else {
-        mbx->setWindowTitle("Конфигурация");
-        mbx->setText("Не удалось перевести устройство в режим администратора");
-        mbx->exec();
+      mbx->setWindowTitle("Конфигурация");
+      mbx->setText("Не удалось перевести устройство в режим администратора");
+      mbx->exec();
     }
-    delete query;
-    port->EndComm();
+    port.EndComm();
 }
 
 QString convertData(QString data) {

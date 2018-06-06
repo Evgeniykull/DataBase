@@ -22,7 +22,7 @@ public slots:
     void deletePoint(int);
     void editPoint(int);
     void setAzsNum(QString);
-    QList<QString> configurePoints();
+//    QList<QString> configurePoints();
 
 private slots:
     void finishAddPoint(int, int, int, int);

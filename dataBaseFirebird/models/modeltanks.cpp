@@ -78,7 +78,7 @@ void ModelTanks::setAzsNum(QString azsNum) {
     azs_num = azsNum;
 }
 
-QList<QString> ModelTanks::configureTanks() {
+/*QList<QString> ModelTanks::configureTanks() {
     QList<QString> *fnsh = new QList<QString>;
     QSqlQuery* query = new QSqlQuery(data_base);
     QString statament = "SELECT ID,FUELID,SENDADDR FROM tanks";
@@ -107,4 +107,4 @@ QList<QString> ModelTanks::configureTanks() {
     }
 
     return *fnsh;
-}
+}*/

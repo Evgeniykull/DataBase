@@ -397,7 +397,6 @@ void MainWindow::onEditFuelsClick() {
     add_fuel_model->editFuels(fuelid);
 }
 
-//передается azsNum, оно меняется!
 void MainWindow::updateTanks() {
     model_tanks->setTable("tanks");
     model_tanks->setRelation(1, QSqlRelation("FUELS", "FUELDID", "NAME"));
@@ -410,7 +409,6 @@ void MainWindow::updateTanks() {
     setTableFormat(ui->tableTanks);
 }
 
-//передается azsNum, оно меняется!
 void MainWindow::addTanks() {
     add_tank_model->setAzsNum(azsNum);
     connect(add_tank_model, SIGNAL(needUpdate()), SLOT(updateTanks()));
@@ -439,7 +437,6 @@ void MainWindow::onEditTanksClick() {
     add_tank_model->editTanks(tankid);
 }
 
-//передается azsNum, оно меняется!
 void MainWindow::updatePoints() {
     QSqlQuery query(db);
     QString statament = QString("SELECT dispsid from POINTS WHERE objectid=%1").arg(azsNum);
@@ -466,10 +463,8 @@ void MainWindow::updatePoints() {
     ui->tablePoints->setModel(model_points);
     ui->tablePoints->setColumnHidden(1, true);
     setTableFormat(ui->tablePoints);
-//    delete query;
 }
 
-//передается azsNum, оно меняется!
 void MainWindow::addPoints() {
     add_point_model->setAzsNum(azsNum);
     add_point_model->addPoint();
@@ -522,7 +517,6 @@ void MainWindow::updateLimits() {
     setTableFormat(ui->tableLimits);
 }
 
-//переменная неизвестна вначале!
 void MainWindow::addLimits() {
     QString info_text = ui->teUserInfo->toPlainText();
     if (info_text.isEmpty()) return;
@@ -720,6 +714,7 @@ void MainWindow::changedObject(QModelIndex idx) {
     azsNum = QString::number(objectid);
     accessCheck();
     QString sett_js = model_object->record(idx.row()).value("CONNECTIONPROPERTY").toByteArray();
+    port_status->setText(model_object->record(idx.row()).value("OBJECTNAME").toString());
     changedObjectSettings(sett_js);
 }
 
@@ -1028,10 +1023,12 @@ void MainWindow::changeUserCard() {
     if (!card_reader->StartComm()) return;
     while (state < 1) {
         //таймер на 5 секунд
-        if (QDateTime::currentDateTime().toSecsSinceEpoch() - dt.toSecsSinceEpoch() > 50) break;
+        if (QDateTime::currentDateTime().toSecsSinceEpoch() - dt.toSecsSinceEpoch() > 5) break;
+        if (stopCard) break;
         answ = card_reader->writeData("get RFInfo");
         state = getValueFromState(answ, "State:").toInt();
     }
+
     qDebug() << answ;
 
     if (state != 2) {

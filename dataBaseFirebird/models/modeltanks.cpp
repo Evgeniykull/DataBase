@@ -15,7 +15,7 @@ ModelTanks::ModelTanks(QSqlDatabase db, QObject *parent) : QObject(parent) {
 void ModelTanks::addTanks() {
     AddTanksDialog * add_tank = new AddTanksDialog(data_base);
     add_tank->show();
-    connect(add_tank, SIGNAL(onOkClick(int,int,QString)), SLOT(finishAddTanks(int,int,QString)));
+    connect(add_tank, SIGNAL(onOkClick(int,int,int,QString)), SLOT(finishAddTanks(int, int,int,QString)));
 }
 
 void ModelTanks::deleteTanks(int user_id) {
@@ -38,9 +38,10 @@ void ModelTanks::editTanks(int tank_id) {
     connect(add_tank, SIGNAL(onOkClick(int,int,int,QString)), SLOT(finishEditTanks(int,int,int,QString)));
 }
 
-void ModelTanks::finishAddTanks(int fuelId, int addr, QString comment) {
+void ModelTanks::finishAddTanks(int id, int fuelId, int addr, QString comment) {
     QSqlQuery* query = new QSqlQuery(data_base);
-    QString statament = QString("INSERT INTO tanks (fuelId, sendAddr, objectId, comment) VALUES (%1, %2, %3, %4)")
+    QString statament = QString("INSERT INTO tanks (id, fuelId, sendAddr, objectId, comment) VALUES (%1, %2, %3, %4, %5)")
+            .arg(QString::number(id))
             .arg(QString::number(fuelId))
             .arg(QString::number(addr))
             .arg(azs_num)

@@ -26,14 +26,11 @@ AddObjectDialog::AddObjectDialog(int object_id, QSqlDatabase db, QWidget *parent
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
 
     QSqlQuery* query = new QSqlQuery(db);
-    QString statament = QString("SELECT objectid, objectname, ADMINPASSWORD FROM OBJECT_TABLES WHERE OBJECTID=%1").arg(QString::number(objectId));
+    QString statament = QString("SELECT objectname, ADMINPASSWORD FROM OBJECT_TABLES WHERE OBJECTID=%1").arg(QString::number(objectId));
     query->exec(statament);
     query->next();
 
     QSqlRecord rec = query->record();
-
-    ui->leObjectId->setText(rec.value("objectId").toString());
-    ui->leObjectId->setDisabled(true);
     ui->leName->setText(rec.value("objectName").toString());
     ui->lePass->setText(rec.value("ADMINPASSWORD").toString());
 }
@@ -44,9 +41,12 @@ AddObjectDialog::~AddObjectDialog()
 }
 
 void AddObjectDialog::onButtonOkClick() {
-    QString objectId = ui->leObjectId->text();
     QString name = ui->leName->text();
     QString pass = ui->lePass->text();
-    emit onOkClick(objectId, name, pass);
+    if (objectId < 0) {
+        emit onOkClick(name, pass);
+    } else {
+        emit onOkClick(QString::number(objectId), name, pass);
+    }
     this->close();
 }

@@ -26,7 +26,7 @@ public slots:
 //    QList<QString> configureTanks();
 
 private slots:
-    void finishAddTanks(int, int, QString);
+    void finishAddTanks(int,int, int, QString);
     void finishEditTanks(int, int, int, QString);
 
 private:

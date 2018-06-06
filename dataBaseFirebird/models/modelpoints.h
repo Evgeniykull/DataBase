@@ -25,7 +25,7 @@ public slots:
 //    QList<QString> configurePoints();
 
 private slots:
-    void finishAddPoint(int, int, int, int);
+    void finishAddPoint(int, int, int, int, int);
     void finishEditPoint(int, int, int, int, int);
 
 private:

@@ -16,7 +16,7 @@ ModelPoints::ModelPoints(QSqlDatabase db, QObject *parent) : QObject(parent) {
 void ModelPoints::addPoint() {
     AddPointsDialog * add_point = new AddPointsDialog(azs_num, data_base);
     add_point->show();
-    connect(add_point, SIGNAL(onOkClick(int,int,int,int)), SLOT(finishAddPoint(int,int,int,int)));
+    connect(add_point, SIGNAL(onOkClick(int,int,int,int,int)), SLOT(finishAddPoint(int,int,int,int,int)));
 }
 
 void ModelPoints::deletePoint(int point_id) {
@@ -39,9 +39,10 @@ void ModelPoints::editPoint(int point_id) {
     connect(add_point, SIGNAL(onOkClick(int,int,int,int,int)), SLOT(finishEditPoint(int,int,int,int,int)));
 }
 
-void ModelPoints::finishAddPoint(int dispsId, int sendAddr, int tankId, int workFrag) {
+void ModelPoints::finishAddPoint(int id, int dispsId, int sendAddr, int tankId, int workFrag) {
     QSqlQuery* query = new QSqlQuery(data_base);
-    QString statament = QString("INSERT INTO points (objectid, dispsid, sendaddr, tankid, workflag) VALUES (%1, %2, %3, %4, %5)")
+    QString statament = QString("INSERT INTO points (id, objectid, dispsid, sendaddr, tankid, workflag) VALUES (%1, %2, %3, %4, %5, %6)")
+            .arg(QString::number(id))
             .arg(azs_num)
             .arg(QString::number(dispsId))
             .arg(QString::number(sendAddr))

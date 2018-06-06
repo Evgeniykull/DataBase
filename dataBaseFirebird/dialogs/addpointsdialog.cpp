@@ -50,7 +50,13 @@ AddPointsDialog::AddPointsDialog(QString object_id, int point_id, QSqlDatabase d
     ui->leDispsId->setText(rec.value("dispsid").toString());
     ui->leAddress->setText(rec.value("sendaddr").toString());
     ui->cbTankId->setCurrentText(tank_map->value(rec.value("tankid").toInt()));
-    ui->leWorkFlag->setText(rec.value("workflag").toString());
+    if (rec.value("workflag").toString() == "1") {
+        ui->cbWork->setChecked(true);
+    } else {
+        ui->cbWork->setChecked(false);
+    }
+    ui->leID->setText(QString::number(pointId));
+    ui->leID->setDisabled(true);
 }
 
 AddPointsDialog::~AddPointsDialog()
@@ -62,13 +68,9 @@ void AddPointsDialog::onButtonOkClick() {
     int dispdId = ui->leDispsId->text().toInt();
     int sendAddr = ui->leAddress->text().toInt();
     int tankId = ui->cbTankId->currentText().toInt();
-    int workFlag = ui->leWorkFlag->text().toInt();
-
-    if (pointId > -1) {
-        emit onOkClick(pointId, dispdId, sendAddr, tankId, workFlag);
-    } else {
-        emit onOkClick(dispdId, sendAddr, tankId, workFlag);
-    }
+    int workFlag = ui->cbWork->isChecked() ? 1 : 0;
+    QString _id = ui->leID->text();
+    emit onOkClick(_id.toInt(), dispdId, sendAddr, tankId, workFlag);
 
     this->close();
 }

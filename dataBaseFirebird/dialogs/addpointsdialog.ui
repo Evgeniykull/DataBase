@@ -10,142 +10,93 @@
     <height>184</height>
    </rect>
   </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>184</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Колонка</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>150</y>
-     <width>331</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>38</y>
-     <width>101</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Disps ID</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="leAddress">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>66</y>
-     <width>221</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="leDispsId">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>36</y>
-     <width>221</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="inputMask">
-    <string>D9999</string>
-   </property>
-   <property name="maxLength">
-    <number>5</number>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>66</y>
-     <width>101</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Адрес</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lblInfoText">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>261</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Введите данные для новой колонки</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>96</y>
-     <width>101</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>ID Резервуара</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_5">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>126</y>
-     <width>101</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Флаг Работы</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="leWorkFlag">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>126</y>
-     <width>221</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="cbTankId">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>96</y>
-     <width>221</width>
-     <height>22</height>
-    </rect>
-   </property>
-  </widget>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="5" column="0" colspan="2">
+    <widget class="QCheckBox" name="cbWork">
+     <property name="text">
+      <string> В работе</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="leDispsId">
+     <property name="inputMask">
+      <string>D9999</string>
+     </property>
+     <property name="maxLength">
+      <number>5</number>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="leAddress"/>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="lblInfoText">
+     <property name="text">
+      <string>Введите данные для новой колонки</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Disps ID</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Адрес</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="cbTankId"/>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Резервуар</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>ID</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="leID"/>
+   </item>
+  </layout>
  </widget>
  <tabstops>
   <tabstop>leDispsId</tabstop>
   <tabstop>leAddress</tabstop>
   <tabstop>cbTankId</tabstop>
-  <tabstop>leWorkFlag</tabstop>
  </tabstops>
  <resources/>
  <connections>

@@ -150,6 +150,7 @@ private slots:
     QMessageBox *mbx;
 
     bool isAdmin = false;
+    bool stopCard = false;
 
     //new
     ModelUser *add_user_model;

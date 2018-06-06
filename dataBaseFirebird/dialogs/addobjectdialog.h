@@ -19,6 +19,7 @@ public:
 
 signals:
     void onOkClick(QString, QString, QString);
+    void onOkClick(QString, QString);
 
 private slots:
     void onButtonOkClick();

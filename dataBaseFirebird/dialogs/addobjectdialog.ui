@@ -7,125 +7,63 @@
     <x>0</x>
     <y>0</y>
     <width>355</width>
-    <height>160</height>
+    <height>130</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>355</width>
-    <height>160</height>
+    <height>130</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
     <width>355</width>
-    <height>160</height>
+    <height>130</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Объект</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>125</y>
-     <width>311</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lblInfoText">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>261</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Введите данные для нового объекта</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>46</y>
-     <width>47</width>
-     <height>13</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>ObjectId</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>70</y>
-     <width>101</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Имя</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="leObjectId">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>40</y>
-     <width>221</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="inputMask">
-    <string>D9999</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="leName">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>70</y>
-     <width>221</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_3">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>100</y>
-     <width>101</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Пароль</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lePass">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>100</y>
-     <width>221</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="lePass"/>
+   </item>
+   <item row="3" column="0" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Пароль</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Имя</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="leName"/>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="lblInfoText">
+     <property name="text">
+      <string>Введите данные для нового объекта</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>

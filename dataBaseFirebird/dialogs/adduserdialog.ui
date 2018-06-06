@@ -7,188 +7,119 @@
     <x>0</x>
     <y>0</y>
     <width>477</width>
-    <height>228</height>
+    <height>200</height>
    </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>200</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Пользователь</string>
   </property>
-  <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>190</y>
-     <width>431</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="leParentId">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>40</y>
-     <width>341</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lblParentId">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>40</y>
-     <width>101</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>ParentId:</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lblInfoText">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>10</y>
-     <width>431</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Введите данные для нового пользователя</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="leShortName">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>70</y>
-     <width>341</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lblShortName">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>70</y>
-     <width>101</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Короткое Имя:</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="leViewName">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>100</y>
-     <width>341</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lblViewName">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>100</y>
-     <width>101</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Отображаемое Имя:</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="cb1">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>167</y>
-     <width>111</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string> Получение ГСМ</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="cb2">
-   <property name="geometry">
-    <rect>
-     <x>170</x>
-     <y>167</y>
-     <width>111</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string> Слив ГСМ</string>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="cb3">
-   <property name="geometry">
-    <rect>
-     <x>300</x>
-     <y>167</y>
-     <width>141</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Администрирование</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="lblViewName_2">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>130</y>
-     <width>101</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Дата: (dd.MM.YY)</string>
-   </property>
-  </widget>
-  <widget class="QDateEdit" name="dEDate">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>130</y>
-     <width>341</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <property name="currentSection">
-    <enum>QDateTimeEdit::DaySection</enum>
-   </property>
-   <property name="displayFormat">
-    <string>dd.MM.yy</string>
-   </property>
-   <property name="calendarPopup">
-    <bool>true</bool>
-   </property>
-   <property name="date">
-    <date>
-     <year>2020</year>
-     <month>5</month>
-     <day>20</day>
-    </date>
-   </property>
-  </widget>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0" colspan="3">
+    <widget class="QLabel" name="lblInfoText">
+     <property name="text">
+      <string>Введите данные для нового пользователя</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="lblParentId">
+     <property name="text">
+      <string>ParentId:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" colspan="2">
+    <widget class="QLineEdit" name="leParentId"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="lblShortName">
+     <property name="text">
+      <string>Имя:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <widget class="QLineEdit" name="leShortName"/>
+   </item>
+   <item row="3" column="0">
+    <widget class="QLabel" name="lblViewName">
+     <property name="text">
+      <string>Имя на устройстве:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" colspan="2">
+    <widget class="QLineEdit" name="leViewName">
+     <property name="inputMask">
+      <string>xxxxxxxxxxxx</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="lblViewName_2">
+     <property name="text">
+      <string>Дата: (dd.MM.YY)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1" colspan="2">
+    <widget class="QDateEdit" name="dEDate">
+     <property name="currentSection">
+      <enum>QDateTimeEdit::DaySection</enum>
+     </property>
+     <property name="displayFormat">
+      <string>dd.MM.yy</string>
+     </property>
+     <property name="calendarPopup">
+      <bool>true</bool>
+     </property>
+     <property name="date">
+      <date>
+       <year>2020</year>
+       <month>5</month>
+       <day>20</day>
+      </date>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QCheckBox" name="cb1">
+     <property name="text">
+      <string> Получение ГСМ</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QCheckBox" name="cb2">
+     <property name="text">
+      <string> Слив ГСМ</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QCheckBox" name="cb3">
+     <property name="text">
+      <string>Администрирование</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <tabstops>
   <tabstop>leParentId</tabstop>

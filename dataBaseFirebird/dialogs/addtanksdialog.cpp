@@ -47,6 +47,8 @@ AddTanksDialog::AddTanksDialog(int tank_id, QSqlDatabase db, QWidget *parent) :
     ui->cbFuels->setCurrentText(fuel_map->value(rec.value("fuelid").toInt()));
     ui->leAdress->setText(rec.value("sendaddr").toString());
     ui->leComment->setText(rec.value("comment").toString());
+    ui->leID->setText(QString::number(tankId));
+    ui->leID->setDisabled(true);
 }
 
 AddTanksDialog::~AddTanksDialog()
@@ -59,12 +61,14 @@ void AddTanksDialog::onButtonOkClick() {
     int fuel_id = fuel_map->key(fuel_name);
     int addr = ui->leAdress->text().toInt();
     QString comment = ui->leComment->text();
+    QString _id = ui->leID->text();
+    emit onOkClick(_id.toInt(), fuel_id, addr, comment);
 
-    if (tankId > -1) {
+    /*if (tankId > -1) {
         emit onOkClick(tankId, fuel_id, addr, comment);
     } else {
         emit onOkClick(fuel_id, addr, comment);
-    }
+    }*/
     this->close();
 }
 

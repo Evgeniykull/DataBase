@@ -16,7 +16,7 @@ ModelObject::ModelObject(QSqlDatabase db, QObject *parent) : QObject(parent) {
 void ModelObject::addObject() {
     AddObjectDialog * add_object = new AddObjectDialog();
     add_object->show();
-    connect(add_object, SIGNAL(onOkClick(QString,QString,QString)), SLOT(finishAddObject(QString,QString,QString)));
+    connect(add_object, SIGNAL(onOkClick(QString,QString)), SLOT(finishAddObject(QString,QString)));
 }
 
 void ModelObject::deleteObject(int object_id) {
@@ -56,10 +56,9 @@ void ModelObject::editObject(int object_id) {
     connect(add_object, SIGNAL(onOkClick(QString,QString,QString)), SLOT(finishEditObject(QString,QString,QString)));
 }
 
-void ModelObject::finishAddObject(QString objectId, QString name, QString pass) {
+void ModelObject::finishAddObject(QString name, QString pass) {
     QSqlQuery* query = new QSqlQuery(data_base);
-    QString statament = QString("INSERT INTO OBJECT_TABLES (objectid, objectName, ADMINPASSWORD) VALUES ('%1', '%2', %3)")
-            .arg(objectId)
+    QString statament = QString("INSERT INTO OBJECT_TABLES (objectName, ADMINPASSWORD) VALUES ('%1', '%2')")
             .arg(name)
             .arg(pass);
 

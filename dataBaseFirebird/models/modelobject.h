@@ -26,7 +26,7 @@ public slots:
     void setSettings(int, QString);
 
 private slots:
-    void finishAddObject(QString, QString, QString);
+    void finishAddObject(QString, QString);
     void finishEditObject(QString, QString, QString);
 
 private:

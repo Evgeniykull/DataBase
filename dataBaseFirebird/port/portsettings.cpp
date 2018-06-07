@@ -52,6 +52,21 @@ PortSettings::PortSettings(QString ad, QString br, QString db, QString na, QStri
     ui->cbStopBits->setCurrentText(sb);
     ui->leAddres->setText(ad);
 
+    SettingsPort.name = ui->cbPortName->itemText(ui->cbPortName->currentIndex());
+    SettingsPort.baudRate = (QSerialPort::BaudRate) ui->cbBaudRate->itemText(ui->cbBaudRate->currentIndex()).toInt();
+    SettingsPort.dataBits = (QSerialPort::DataBits) ui->cbDataBist->itemText(ui->cbDataBist->currentIndex()).toInt();
+    SettingsPort.parity = (QSerialPort::Parity) ui->cbPairity->itemText(ui->cbPairity->currentIndex()).toInt();
+    SettingsPort.stopBits = (QSerialPort::StopBits) ui->cbStopBits->itemText(ui->cbStopBits->currentIndex()).toInt();
+    SettingsPort.addres = ui->leAddres->text();
+}
+
+void PortSettings::setSettings(QString ad, QString br, QString db, QString na, QString pa, QString sb) {
+    ui->cbPortName->setCurrentText(na);
+    ui->cbBaudRate->setCurrentText(br);
+    ui->cbDataBist->setCurrentText(db);
+    ui->cbPairity->setCurrentText(pa);
+    ui->cbStopBits->setCurrentText(sb);
+    ui->leAddres->setText(ad);
 
     SettingsPort.name = ui->cbPortName->itemText(ui->cbPortName->currentIndex());
     SettingsPort.baudRate = (QSerialPort::BaudRate) ui->cbBaudRate->itemText(ui->cbBaudRate->currentIndex()).toInt();

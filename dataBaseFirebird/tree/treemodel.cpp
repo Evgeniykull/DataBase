@@ -55,6 +55,9 @@ TreeModel::TreeModel(const QSqlRelationalTableModel &data, QTextEdit *tE, QObjec
 TreeModel::~TreeModel()
 {
     delete rootItem;
+    delete items_list;
+    delete m_map;
+    delete not_visible_item;
 }
 
 QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent)

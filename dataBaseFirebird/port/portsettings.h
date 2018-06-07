@@ -23,6 +23,7 @@ public:
     ~PortSettings();
     Settings SettingsPort;
     bool isChanged;
+    void setSettings(QString,QString,QString,QString,QString,QString);
 
 private slots:
     void checkCustomBaudRatePolicy(int idx);

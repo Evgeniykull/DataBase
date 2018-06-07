@@ -134,6 +134,11 @@ void MainWindow::declOfVaribles() {
     model_points = new QSqlRelationalTableModel(0, db);
 
     mbx = new QMessageBox();
+
+    port_settings = new PortSettings();
+    connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(writeObjectSettings()));
+
+    model = new TreeModel(*model_users, ui->teUserInfo);
 }
 
 void MainWindow::currentTabChanged(int tabNum) {
@@ -339,6 +344,10 @@ void setTableFormat(QTableView *tab, int autoresize = 1)
 void MainWindow::updateUsers() {
     model_users->select();
     //пока treeModel оставлю
+    if (model != nullptr) {
+        delete model;
+    }
+
     model = new TreeModel(*model_users, ui->teUserInfo);
     ui->treeView->setModel(model);
     connect(ui->treeView, SIGNAL(clicked(QModelIndex)), model, SLOT(Clicked(QModelIndex)));
@@ -659,6 +668,8 @@ void MainWindow::getHistory() {
         if (query->lastError().isValid()) {
             qDebug() << query->lastError().databaseText();
         }
+        QString lbl = QString("Считано %1 из %2").arg(QString::number(i)).arg(QString::number(endid-curid-1));
+        progr_dialog->setLabelText(lbl);
         progr_dialog->setValue(i);
         QCoreApplication::processEvents();
         if (progr_dialog->wasCanceled()) {
@@ -718,7 +729,6 @@ void MainWindow::changedObject(QModelIndex idx) {
     changedObjectSettings(sett_js);
 }
 
-//тоже пока оставлю new
 void MainWindow::changedObjectSettings(QString objSett) {
     QJsonDocument doc = QJsonDocument::fromJson(objSett.toUtf8());
     QJsonObject json_obj = doc.object();
@@ -729,10 +739,9 @@ void MainWindow::changedObjectSettings(QString objSett) {
     QString pa = QString::number(json_obj["pairy"].toInt());
     QString sb = QString::number(json_obj["stopBits"].toInt());
 
-    port_settings = new PortSettings(adr, br, db, na, pa, sb);
+    port_settings->setSettings(adr, br, db, na, pa, sb);
 }
 
-// !!!
 void MainWindow::setObjectSettings() {
     int idx = ui->tableObject->currentIndex().row();
     if (idx < 0) {
@@ -740,15 +749,10 @@ void MainWindow::setObjectSettings() {
     }
     int objectid = model_object->record(idx).value("objectid").toInt();
     QString sett_js = add_object_model->getSettings(objectid);
-    if (sett_js.isEmpty()) {
-        port_settings = new PortSettings();
-        connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(writeObjectSettings()));
-        port_settings->exec();
-    } else {
+    if (!sett_js.isEmpty()) {
         changedObjectSettings(sett_js);
-        connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(writeObjectSettings()));
-        port_settings->exec();
     }
+    port_settings->exec();
 }
 
 void MainWindow::writeObjectSettings() {

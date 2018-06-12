@@ -16,12 +16,12 @@
 #include "port/port.h"
 #include "port/portsettings.h"
 #include "models/modeluser.h"
-#include "models/modelfuels.h"
-#include "models/modeltanks.h"
-#include "models/modelpoints.h"
 #include "models/modellimit.h"
-#include "models/modelobject.h"
 #include "dialogs/getcarddialog.h"
+#include "dialogs/addtanksdialog.h"
+#include "dialogs/addfuelsdialog.h"
+#include "dialogs/addpointsdialog.h"
+#include "dialogs/addobjectdialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -113,6 +113,8 @@ private slots:
     QJsonValue getJSONField(QByteArray data,QString fieldname);
     void timerEnd();
 
+    void MessageToUser(QString title,QString text);
+
   private:
     Ui::MainWindow *ui;
     QLabel *status_bar;
@@ -145,7 +147,7 @@ private slots:
     int timer_end = 0;
     int last_select_tab2 = 0;
     QSettings *settings;
-    QString azsNum = 0;
+    int azsNum = 0;
     QString pointNum = "";
     QMessageBox *mbx;
 
@@ -154,12 +156,14 @@ private slots:
 
     //new
     ModelUser *add_user_model;
-    ModelFuels *add_fuel_model;
-    ModelTanks *add_tank_model;
-    ModelPoints *add_point_model;
     ModelLimit *add_limits_model;
-    ModelObject *add_object_model;
     GetCardDialog *card_dialog;
+
+//// Диалоги редактирования BD
+    AddFuelsDialog * add_fuels;
+    AddTanksDialog * add_tanks;
+    AddPointsDialog * add_points;
+    AddObjectDialog * add_object;
 };
 
 #endif // MAINWINDOW_H

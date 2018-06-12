@@ -35,16 +35,12 @@ SOURCES += \
     port/port.cpp \
     dialogs/addfuelsdialog.cpp \
     dialogs/adduserdialog.cpp \
-    models/modelfuels.cpp \
     models/modeluser.cpp \
-    models/modeltanks.cpp \
     dialogs/addtanksdialog.cpp \
-    models/modelpoints.cpp \
     dialogs/addpointsdialog.cpp \
     dialogs/getcarddialog.cpp \
     models/modellimit.cpp \
     dialogs/addlimitsdialog.cpp \
-    models/modelobject.cpp \
     dialogs/addobjectdialog.cpp \
     models/modelhistory.cpp
 
@@ -59,16 +55,12 @@ HEADERS += \
     port/port.h \
     dialogs/addfuelsdialog.h \
     dialogs/adduserdialog.h \
-    models/modelfuels.h \
     models/modeluser.h \
-    models/modeltanks.h \
     dialogs/addtanksdialog.h \
-    models/modelpoints.h \
     dialogs/addpointsdialog.h \
     dialogs/getcarddialog.h \
     models/modellimit.h \
     dialogs/addlimitsdialog.h \
-    models/modelobject.h \
     dialogs/addobjectdialog.h \
     utils/utils.h \
     models/modelhistory.h

@@ -3,19 +3,19 @@
 #include <QSqlError>
 #include <QDebug>
 
-ModelFuels::ModelFuels(QObject *parent) : QObject(parent)
+/*ModelFuels::ModelFuels(QObject *parent) : QObject(parent)
 {
-}
+}*/
 
 ModelFuels::ModelFuels(QSqlDatabase db, QObject *parent) : QObject(parent) {
-    data_base = db;
-    mBx = new QMessageBox();
+  AddFuelsDialog * add_fuels = new AddFuelsDialog();
+  connect(add_fuels, SIGNAL(onOkClick(QString,QString,QString)), SLOT(finishAddFuels(QString,QString,QString)));
+  data_base = db;
+  mBx = new QMessageBox();
 }
 
 void ModelFuels::addFuels() {
-    AddFuelsDialog * add_fuels = new AddFuelsDialog();
-    add_fuels->show();
-    connect(add_fuels, SIGNAL(onOkClick(QString,QString,QString)), SLOT(finishAddFuels(QString,QString,QString)));
+  add_fuels->show();
 }
 
 void ModelFuels::deleteFuels(int user_id) {
@@ -33,7 +33,8 @@ void ModelFuels::deleteFuels(int user_id) {
 }
 
 void ModelFuels::editFuels(int user_id) {
-    AddFuelsDialog * add_fuels = new AddFuelsDialog(user_id, data_base);
+//    AddFuelsDialog * add_fuels = new AddFuelsDialog(user_id, data_base);
+    add_fuels->SetFuelData(user_id, data_base);
     add_fuels->show();
     connect(add_fuels, SIGNAL(onOkClick(int,QString,QString,QString)), SLOT(finishEditFuels(int,QString,QString,QString)));
 }

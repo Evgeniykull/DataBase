@@ -20,37 +20,10 @@
    <string>Колонка</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="5" column="0" colspan="2">
-    <widget class="QCheckBox" name="cbWork">
-     <property name="text">
-      <string> В работе</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="leDispsId">
-     <property name="inputMask">
-      <string>D9999</string>
-     </property>
-     <property name="maxLength">
-      <number>5</number>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="leAddress"/>
-   </item>
-   <item row="0" column="0" colspan="2">
-    <widget class="QLabel" name="lblInfoText">
-     <property name="text">
-      <string>Введите данные для новой колонки</string>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Disps ID</string>
+      <string>Номер колонки</string>
      </property>
     </widget>
    </item>
@@ -58,6 +31,16 @@
     <widget class="QLabel" name="label_3">
      <property name="text">
       <string>Адрес</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="cbTankId"/>
+   </item>
+   <item row="5" column="0" colspan="2">
+    <widget class="QCheckBox" name="cbWork">
+     <property name="text">
+      <string> В работе</string>
      </property>
     </widget>
    </item>
@@ -71,8 +54,8 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
-    <widget class="QComboBox" name="cbTankId"/>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="leAddress"/>
    </item>
    <item row="4" column="0">
     <widget class="QLabel" name="label_4">
@@ -81,10 +64,27 @@
      </property>
     </widget>
    </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QLabel" name="lblInfoText">
+     <property name="text">
+      <string>Введите данные для новой колонки</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="leDispsId">
+     <property name="inputMask">
+      <string>D9999</string>
+     </property>
+     <property name="maxLength">
+      <number>5</number>
+     </property>
+    </widget>
+   </item>
    <item row="1" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>ID</string>
+      <string>Рукав</string>
      </property>
     </widget>
    </item>

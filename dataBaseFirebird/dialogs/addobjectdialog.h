@@ -14,12 +14,15 @@ class AddObjectDialog : public QDialog
 
 public:
     explicit AddObjectDialog(QWidget *parent = 0);
-    explicit AddObjectDialog(int, QSqlDatabase, QWidget *parent = 0);
+    void ShowObjectData(int ObjectID,QSqlDatabase db);
+    void DeleteObject(int object_id,QSqlDatabase db);
+    QString getSettings(int object_id,QSqlDatabase db);
+    void setSettings(int object_id,QString sett,QSqlDatabase db);
     ~AddObjectDialog();
 
 signals:
-    void onOkClick(QString, QString, QString);
-    void onOkClick(QString, QString);
+    void needUpdate();
+    void toUser(QString title,QString message);
 
 private slots:
     void onButtonOkClick();
@@ -28,6 +31,7 @@ private:
     Ui::AddObjectDialog *ui;
     int objectId = -1;
     QSqlDatabase dataBase;
+    void ShowErrorMessage(QString title,QString text);
 };
 
 #endif // ADDOBJECTDIALOG_H

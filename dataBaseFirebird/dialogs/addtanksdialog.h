@@ -14,13 +14,16 @@ class AddTanksDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit AddTanksDialog(QSqlDatabase, QWidget *parent = 0);
-    explicit AddTanksDialog(int, QSqlDatabase, QWidget *parent = 0);
+    explicit AddTanksDialog(QWidget *parent = 0);
+//    explicit AddTanksDialog(int, QSqlDatabase, QWidget *parent = 0);
     ~AddTanksDialog();
 
+    void ShowTankDialog(int tid,int oid,QSqlDatabase db);
+    void DeleteTank(int tid,int oid,QSqlDatabase db);
+
 signals:
-    void onOkClick(int, int, int, QString);
-    void onOkClick(int, int, QString);
+  void needUpdate();
+  void toUser(QString title,QString message);
 
 private slots:
     void onButtonOkClick();
@@ -28,8 +31,11 @@ private slots:
 private:
     Ui::AddTanksDialog *ui;
     int tankId = -1;
+    int ObjectId = -1;
     QSqlDatabase dataBase;
     QMap<int, QString>* fuel_map;
+
+    void ShowErrorMessage(QString title,QString text);
 
     void getFuelMap();
 };

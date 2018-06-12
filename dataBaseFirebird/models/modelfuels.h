@@ -12,7 +12,7 @@ class ModelFuels : public QObject
 {
     Q_OBJECT
 public:
-    explicit ModelFuels(QObject *parent = nullptr);
+//    explicit ModelFuels(QObject *parent = nullptr);
     explicit ModelFuels(QSqlDatabase, QObject *parent = nullptr);
 
 signals:
@@ -29,6 +29,7 @@ private slots:
     void finishEditFuels(int, QString, QString, QString);
 
 private:
+    AddFuelsDialog * add_fuels;
     QSqlDatabase data_base;
     QMessageBox *mBx;
 };

@@ -525,6 +525,7 @@ void MainWindow::updateLimits() {
 
     model_limits->setTable("limits");
     model_limits->setRelation(2, QSqlRelation("FUELS", "FUELDID", "NAME"));
+    model_limits->setRelation(5, QSqlRelation("LIMITS_TYPE", "LIMID", "LIMTYPENAME"));
     model_limits->setEditStrategy(QSqlTableModel::OnManualSubmit);
     QString filter = QString("userid=%1").arg(user_id);
     model_limits->setFilter(filter);

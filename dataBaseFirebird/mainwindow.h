@@ -57,6 +57,7 @@ private slots:
     void onAddUsersClick();
     void deleteUsers();
     void onEditUsersClick();
+    void onUserClick();
 
     void updateFuels();
     void addFuels();
@@ -78,6 +79,7 @@ private slots:
     void addLimits();
     void deleteLimits();
     void editLimits();
+    void onApplyClick();
 
     void updateObject();
     void addObject();
@@ -127,6 +129,7 @@ private slots:
     QSqlRelationalTableModel *model_tanks;
     QSqlRelationalTableModel *model_points;
     QSqlRelationalTableModel *model_limits;
+    QSqlRelationalTableModel *model_new_limits;
     QSqlRelationalTableModel *model_object;
     QSqlRelationalTableModel *model_history;
     TreeModel *model;

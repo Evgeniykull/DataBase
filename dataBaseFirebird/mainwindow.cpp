@@ -87,6 +87,7 @@ void MainWindow::renderToolbar() {
     connect(ui->pbAddLimits, SIGNAL(clicked(bool)), SLOT(addLimits()));
     connect(ui->pbDeleteLimits, SIGNAL(clicked(bool)), SLOT(deleteLimits()));
     connect(ui->pbEditLimits, SIGNAL(clicked(bool)), SLOT(editLimits()));
+    connect(ui->pbApply, SIGNAL(clicked(bool)), SLOT(onApplyClick()));
 
     connect(ui->pbAddObj, SIGNAL(clicked(bool)), SLOT(addObject()));
     connect(ui->pbDeleteObj, SIGNAL(clicked(bool)), SLOT(deleteObject()));
@@ -109,6 +110,7 @@ void MainWindow::declOfVaribles() {
     model_users->setEditStrategy(QSqlTableModel::OnManualSubmit);
     add_user_model = new ModelUser(db);
     connect(add_user_model, SIGNAL(needUpdate()), SLOT(updateUsers()));
+    connect(ui->listViewUsers, SIGNAL(clicked(QModelIndex)), SLOT(onUserClick()));
 
 ////////
 // Всё что касается окна редактирования топлива
@@ -131,6 +133,7 @@ void MainWindow::declOfVaribles() {
     connect(add_points, SIGNAL(toUser(QString,QString)), SLOT(MessageToUser(QString,QString)));
 
     model_limits = new QSqlRelationalTableModel(0, db);
+    model_new_limits = new QSqlRelationalTableModel(0, db);
     model_history = new QSqlRelationalTableModel(0, db);
 
     model_object = new QSqlRelationalTableModel(0, db);
@@ -149,7 +152,7 @@ void MainWindow::declOfVaribles() {
     port_settings = new PortSettings();
     connect(port_settings, SIGNAL(settingsIsChanged()), SLOT(writeObjectSettings()));
 
-    model = new TreeModel(*model_users, ui->teUserInfo);
+    //model = new TreeModel(*model_users, ui->teUserInfo);
 }
 
 void MainWindow::currentTabChanged(int tabNum) {
@@ -363,7 +366,12 @@ void setTableFormat(QTableView *tab, int autoresize = 1)
 
 void MainWindow::updateUsers() {
     model_users->select();
+    ui->listViewUsers->setModel(model_users);
+    ui->listViewUsers->setModelColumn(2);
+    ui->teUserInfo->clear();
+
     //пока treeModel оставлю
+    /*
     if (model != nullptr) {
         delete model;
     }
@@ -371,8 +379,7 @@ void MainWindow::updateUsers() {
     model = new TreeModel(*model_users, ui->teUserInfo);
     ui->treeView->setModel(model);
     connect(ui->treeView, SIGNAL(clicked(QModelIndex)), model, SLOT(Clicked(QModelIndex)));
-    ui->teUserInfo->clear();
-    //ui->tableLimits->clearSelection();
+    */
 }
 
 void MainWindow::onAddUsersClick() {
@@ -380,22 +387,45 @@ void MainWindow::onAddUsersClick() {
 }
 
 void MainWindow::onEditUsersClick() {
-    if (ui->treeView->currentIndex().row() < 0) {
-        return;
-    }
-    int userid = ui->teUserInfo->toPlainText().split("\n").at(0).split(":")[1].toInt();
+    int idx = ui->listViewUsers->currentIndex().row();
+    if (idx < 0) return;
+    int userid = model_users->record(idx).value("userid").toInt();
     add_user_model->editUsers(userid);
 }
 
 //TODO добавить подтверждение
 void MainWindow::deleteUsers()
 {
-    if (ui->treeView->currentIndex().row() < 0) {
-        return;
-    }
-
-    int userid = ui->teUserInfo->toPlainText().split("\n").at(0).split(":")[1].toInt();
+    int idx = ui->listViewUsers->currentIndex().row();
+    if (idx < 0) return;
+    int userid = model_users->record(idx).value("userid").toInt();
     add_user_model->deleteUsers(userid);
+}
+
+void MainWindow::onUserClick() {
+    ui->teUserInfo->clear();
+    int idx = ui->listViewUsers->currentIndex().row();
+    if (idx < 0) return;
+    QString userid = model_users->record(idx).value("userid").toString();
+    QString statament = QString("SELECT userid, parentid, shortname, viewname, cardid, flags, sldate, refslim FROM users WHERE userid=%1").arg(userid);
+    QSqlQuery _q(statament);
+    _q.exec();
+    _q.first();
+
+    QString statament2 = QString("SELECT SHORTNAME FROM users WHERE userid=%1").arg(_q.record().value("parentid").toString());
+    QSqlQuery _q2(statament2);
+    _q2.exec();
+    _q2.first();
+
+    QString user_info = "ID Пользователя: " + _q.record().value("userid").toString() + "\n" +
+            "ID Родителя: " + _q2.record().value("shortname").toString() + "\n" +
+            "Короткое имя: " + _q.record().value("shortname").toString() + "\n" +
+            "Имя пользователя: " + _q.record().value("viewname").toString() + "\n" +
+            "ID Карты: " + _q.record().value("cardid").toString() + "\n" +
+            "Флаги: " + _q.record().value("flags").toString() + "\n" +
+            "Дата введения: " + _q.record().value("sldate").toString() + "\n" +
+            "Необходимость обновить: " + _q.record().value("refslim").toString() + "\n";
+    ui->teUserInfo->setText(user_info);
 }
 
 ///////////////////////////////////////////////
@@ -523,16 +553,53 @@ void MainWindow::updateLimits() {
         return;
     }
 
+    QSqlQuery _q(db);
+    QString st = QString("SELECT LIMGROUP, NEWLIMGROUP FROM USERS WHERE userid=%1").arg(user_id);
+    _q.exec(st);
+    _q.first();
+
     model_limits->setTable("limits");
     model_limits->setRelation(2, QSqlRelation("FUELS", "FUELDID", "NAME"));
     model_limits->setRelation(5, QSqlRelation("LIMITS_TYPE", "LIMID", "LIMTYPENAME"));
     model_limits->setEditStrategy(QSqlTableModel::OnManualSubmit);
-    QString filter = QString("userid=%1").arg(user_id);
-    model_limits->setFilter(filter);
+    QString _filter = QString("userid=%1 and limgroup=%2").arg(user_id).arg(_q.record().value("LIMGROUP").toString());
+    model_limits->setFilter(_filter);
     model_limits->select();
     ui->tableLimits->setModel(model_limits);
     ui->tableLimits->setColumnHidden(1, true);
     setTableFormat(ui->tableLimits);
+
+    model_new_limits->setTable("limits");
+    model_new_limits->setRelation(2, QSqlRelation("FUELS", "FUELDID", "NAME"));
+    model_new_limits->setRelation(5, QSqlRelation("LIMITS_TYPE", "LIMID", "LIMTYPENAME"));
+    model_new_limits->setEditStrategy(QSqlTableModel::OnManualSubmit);
+    QString filter = QString("userid=%1 and limgroup=%2").arg(user_id).arg(_q.record().value("NEWLIMGROUP").toString());
+    model_new_limits->setFilter(filter);
+    model_new_limits->select();
+    ui->tableNewLimits->setModel(model_new_limits);
+    ui->tableNewLimits->setColumnHidden(1, true);
+    setTableFormat(ui->tableNewLimits);
+}
+
+void MainWindow::onApplyClick() {
+    QString info_text = ui->teUserInfo->toPlainText();
+    if (info_text.isEmpty()) return;
+    int pos1 = info_text.indexOf(":");
+    int pos2 = info_text.indexOf("\n");
+    QString user_id = info_text.mid(pos1+2, pos2-pos1-2);
+
+    QSqlQuery _q(db);
+    QString st = QString("SELECT NEWLIMGROUP, LIMGROUP FROM USERS WHERE userid=%1").arg(user_id);
+    _q.exec(st);
+    _q.first();
+
+    QSqlQuery query2(db);
+    QString statament2 = QString("UPDATE users SET LIMGROUP=%1, NEWLIMGROUP=%2 WHERE userid=%3")
+            .arg(_q.record().value("NEWLIMGROUP").toString())
+            .arg("0")
+            .arg(user_id);
+    query2.exec(statament2);
+    updateLimits();
 }
 
 void MainWindow::addLimits() {
@@ -547,7 +614,7 @@ void MainWindow::addLimits() {
 }
 
 void MainWindow::deleteLimits() {
-    QModelIndex iid = ui->tableLimits->currentIndex();
+    QModelIndex iid = ui->tableNewLimits->currentIndex();
     int idx = iid.row();
     if (idx < 0) {
         return;
@@ -560,13 +627,13 @@ void MainWindow::deleteLimits() {
     QString user_id = info_text.mid(pos1+2, pos2-pos1-2);
     if (user_id.isEmpty()) return;
 
-    int limitsid = model_limits->record(idx).value("id").toInt();
+    int limitsid = model_new_limits->record(idx).value("id").toInt();
     add_limits_model->setUserId(user_id);
     add_limits_model->deleteLimits(limitsid);
 }
 
 void MainWindow::editLimits() {
-    int idx = ui->tableLimits->currentIndex().row();
+    int idx = ui->tableNewLimits->currentIndex().row();
     if (idx < 0) {
         return;
     }
@@ -578,7 +645,7 @@ void MainWindow::editLimits() {
     QString user_id = info_text.mid(pos1+2, pos2-pos1-2);
     if (user_id.isEmpty()) return;
 
-    int limitid = model_limits->record(idx).value("id").toInt();
+    int limitid = model_new_limits->record(idx).value("id").toInt();
     add_limits_model->setUserId(user_id);
     add_limits_model->editLimits(limitid);
 }

@@ -18,17 +18,22 @@ public:
     ~addUserDialog();
 
 signals:
-    void onOkClick(int, QString, QString, int, QString);
-    void onOkClick(int, int, QString, QString, int, QString, bool);
+    void onOkClick(int, QString, QString, int, QString, QString);
+    void onOkClick(int, int, QString, QString, int, QString, QString, bool);
 
 private slots:
     void onButtonOkClick();
+    void typeChanged(QString);
 
 private:
     Ui::addUserDialog *ui;
     int userId = -1;
     QSqlDatabase dataBase;
     QString sldate1 = "";
+    void addUserType();
+    void getParents();
+    QMap <QString, QString>* parent_map;
+    QMap <QString, QString>* us_type;
 };
 
 #endif // ADDUSERDIALOG_H

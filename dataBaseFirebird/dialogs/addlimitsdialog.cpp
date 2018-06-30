@@ -13,6 +13,17 @@ AddLimitsDialog::AddLimitsDialog(QWidget *parent) :
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
     getFuelMap();
     getLimitsType();
+    QDate date = QDate::currentDate();
+    ui->dtEd->setDate(date);
+}
+
+QString convertData1(QString data) {
+    QString newData = data.split("-")[2];
+    newData.append(".");
+    newData.append(data.split("-")[1]);
+    newData.append(".");
+    newData.append(data.split("-")[0].mid(2,2));
+    return newData;
 }
 
 AddLimitsDialog::AddLimitsDialog(int limits_id, QSqlDatabase db, QWidget *parent) :
@@ -27,15 +38,20 @@ AddLimitsDialog::AddLimitsDialog(int limits_id, QSqlDatabase db, QWidget *parent
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
     getFuelMap();
 
-    QSqlQuery* query = new QSqlQuery(dataBase);
+    QSqlQuery query(dataBase);
     //не удалось заменить
-    QString statament = QString("SELECT fuelid, valuel, daysd, typed FROM limits WHERE id=%1").arg(QString::number(limits_id));
+    QString statament = QString("SELECT fuelid, valuel, daysd, typed, ENDDATE FROM limits WHERE id=%1").arg(QString::number(limits_id));
     qDebug() << statament;
-    query->exec(statament);
-    query->next();
+    query.exec(statament);
+    query.next();
 
-    QSqlRecord rec = query->record();
+    QSqlRecord rec = query.record();
     qDebug() << rec;
+
+    QString endDate = convertData1(rec.value("ENDDATE").toString());
+    QStringList ed = endDate.split(".");
+    QDate date = QDate::fromString(ed[0]+"."+ed[1]+"."+ed[2], "dd.MM.yy");
+    ui->dtEd->setDate(date);
 
     ui->cbFuels->setCurrentText(fuel_map->value(rec.value("fuelid").toInt()));
     ui->leValue->setText(rec.value("valuel").toString());
@@ -45,6 +61,7 @@ AddLimitsDialog::AddLimitsDialog(int limits_id, QSqlDatabase db, QWidget *parent
 
 AddLimitsDialog::~AddLimitsDialog()
 {
+    delete lim_type;
     delete ui;
 }
 
@@ -54,11 +71,12 @@ void AddLimitsDialog::onButtonOkClick() {
     QString value = ui->leValue->text();
     QString days = ui->leDays->text();
     QString type = lim_type->value(ui->cbType->currentText());
+    QString endDate = ui->dtEd->date().toString("dd.MM.yy");
 
     if (limitsId > -1) {
-        emit onOkClick(limitsId, QString::number(fuel_id), value, days, type);
+        emit onOkClick(limitsId, QString::number(fuel_id), value, days, type, endDate);
     } else {
-        emit onOkClick(QString::number(fuel_id), value, days, type);
+        emit onOkClick(QString::number(fuel_id), value, days, type, endDate);
     }
     this->close();
 }

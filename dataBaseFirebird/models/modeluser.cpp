@@ -16,7 +16,7 @@ ModelUser::ModelUser(QSqlDatabase db, QObject *parent) : QObject(parent) {
 void ModelUser::addUser() {
     addUserDialog * add_user = new addUserDialog();
     add_user->show();
-    connect(add_user, SIGNAL(onOkClick(int,QString,QString, int, QString)), SLOT(finishAddUser(int,QString,QString, int, QString)));
+    connect(add_user, SIGNAL(onOkClick(int,QString,QString, int, QString, QString)), SLOT(finishAddUser(int,QString,QString, int, QString, QString)));
 }
 
 void ModelUser::deleteUsers(int user_id) {
@@ -51,23 +51,24 @@ void ModelUser::deleteUsers(int user_id) {
 void ModelUser::editUsers(int user_id) {
     addUserDialog * add_user = new addUserDialog(user_id, data_base);
     add_user->show();
-    connect(add_user, SIGNAL(onOkClick(int,int,QString,QString, int, QString, bool)), SLOT(finishEditUser(int,int,QString,QString, int, QString, bool)));
+    connect(add_user, SIGNAL(onOkClick(int,int,QString,QString, int, QString, QString, bool)), SLOT(finishEditUser(int,int,QString,QString, int, QString, QString, bool)));
 }
 
-void ModelUser::finishAddUser(int parentId, QString name, QString shortName, int perm, QString date) {
+void ModelUser::finishAddUser(int parentId, QString name, QString shortName, int perm, QString type, QString date) {
     QString dt = QDate::currentDate().toString("dd.MM.yy");
     if (!date.isEmpty()) {
         dt = date;
     }
 
     QSqlQuery* query = new QSqlQuery(data_base);
-    QString statament = QString("INSERT INTO users (parentId, shortname, viewname, cardid, flags, sldate, refslim) VALUES (%1, %2, %3, %4, %5, '%6', 1)")
+    QString statament = QString("INSERT INTO users (parentId, shortname, viewname, cardid, flags, sldate, refslim, ustype) VALUES (%1, %2, %3, %4, %5, '%6', 1, %7)")
             .arg(QString::number(parentId))
             .arg("'" + shortName + "'")
             .arg("'" + name + "'")
             .arg("0")
             .arg(QString::number(perm))
-            .arg(dt);
+            .arg(dt)
+            .arg(type);
 
     query->exec(statament);
     if (query->lastError().isValid()) {
@@ -79,18 +80,19 @@ void ModelUser::finishAddUser(int parentId, QString name, QString shortName, int
     emit needUpdate();
 }
 
-void ModelUser::finishEditUser(int userId, int parentId, QString name, QString shortName, int perm, QString date, bool dateUpd) {
+void ModelUser::finishEditUser(int userId, int parentId, QString name, QString shortName, int perm, QString type, QString date, bool dateUpd) {
     //date and dt compate
     int dateUpdated = dateUpd ? 0 : 1;
 
     QSqlQuery* query = new QSqlQuery(data_base);
-    QString statament = QString("UPDATE users SET parentid=%1, shortname=%2, viewname=%3, flags=%4, sldate='%5', refslim=%6 WHERE userid=%7")
+    QString statament = QString("UPDATE users SET parentid=%1, shortname=%2, viewname=%3, flags=%4, sldate='%5', refslim=%6, ustype=%7 WHERE userid=%8")
             .arg(QString::number(parentId))
             .arg("'" +  shortName + "'")
             .arg("'" + name + "'")
             .arg(QString::number(perm))
             .arg(date)
             .arg(dateUpdated)
+            .arg(type)
             .arg(QString::number(userId));
 
     query->exec(statament);

@@ -24,8 +24,8 @@ public slots:
     void editUsers(int);
 
 private slots:
-    void finishAddUser(int, QString, QString, int, QString, QString);
-    void finishEditUser(int, int, QString, QString, int, QString, QString, bool);
+    void finishAddUser(int, QString, QString, int, QString);
+    void finishEditUser(int, int, QString, QString, int, QString);
 
 private:
     QSqlDatabase data_base;

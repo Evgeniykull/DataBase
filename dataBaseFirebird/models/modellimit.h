@@ -25,8 +25,8 @@ public slots:
     void setUserId(QString);
 
 private slots:
-    void finishAddLimits(QString, QString, QString, QString, QString);
-    void finishEditLimits(int, QString, QString, QString, QString, QString);
+    void finishAddLimits(QString, QString, QString, QString);
+    void finishEditLimits(int, QString, QString, QString, QString);
 
 private:
     QSqlDatabase data_base;

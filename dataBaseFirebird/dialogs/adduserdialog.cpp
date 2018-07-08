@@ -14,20 +14,9 @@ addUserDialog::addUserDialog(QWidget *parent) :
     connect(ui->buttonBox, SIGNAL(accepted()), SLOT(onButtonOkClick()));
     addUserType();
     getParents();
-    QDate date = QDate::currentDate();
-    ui->dEDate->setDate(date);
     connect(ui->cmbType, SIGNAL(currentTextChanged(QString)), SLOT(typeChanged(QString)));
     typeChanged("Группа");
 }
-
-/*QString convertData1(QString data) {
-    QString newData = data.split("-")[2];
-    newData.append(".");
-    newData.append(data.split("-")[1]);
-    newData.append(".");
-    newData.append(data.split("-")[0].mid(2,2));
-    return newData;
-}*/
 
 addUserDialog::addUserDialog(int user_id, QSqlDatabase db, QWidget *parent) :
     QDialog(parent),
@@ -65,11 +54,6 @@ addUserDialog::addUserDialog(int user_id, QSqlDatabase db, QWidget *parent) :
     ui->cmbParent->setCurrentText(parent_map->key(rec.value("PARENTID").toString()));
     ui->leShortName->setText(rec.value("SHORTNAME").toString());
     ui->leViewName->setText(rec.value("VIEWNAME").toString());
-    //sldate1 = convertData1(rec.value("SLDATE").toString());
-
-    //QStringList sl = sldate1.split(".");
-    //QDate date = QDate::fromString(sl[0]+"."+sl[1]+"."+sl[2], "dd.MM.yy");
-    //ui->dEDate->setDate(date);
     ui->cmbType->setCurrentText(us_type->key(rec.value("ustype").toString()));
     typeChanged(us_type->key(rec.value("ustype").toString()));
 }
@@ -101,14 +85,14 @@ void addUserDialog::onButtonOkClick() {
     if (ui->cb3->isChecked()) {
         perm+=4;
     }
-    QString SLDate = ui->dEDate->date().toString("dd.MM.yy");
+    //QString SLDate = ui->dEDate->date().toString("dd.MM.yy");
 
-    bool dateUpd = sldate1 == SLDate;
+    //bool dateUpd = sldate1 == SLDate;
 
     if (userId > -1) {
-        emit onOkClick(userId, parentId, name, shortName, perm, type, SLDate, dateUpd);
+        emit onOkClick(userId, parentId, name, shortName, perm, type);
     } else {
-        emit onOkClick(parentId, name, shortName, perm, type, SLDate);
+        emit onOkClick(parentId, name, shortName, perm, type);
     }
     this->close();
 }

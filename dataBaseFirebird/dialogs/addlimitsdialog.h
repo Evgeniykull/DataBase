@@ -19,8 +19,8 @@ public:
     ~AddLimitsDialog();
 
 signals:
-    void onOkClick(int, QString, QString, QString, QString, QString);
-    void onOkClick(QString, QString, QString, QString, QString);
+    void onOkClick(int, QString, QString, QString, QString);
+    void onOkClick(QString, QString, QString, QString);
 
 private slots:
     void onButtonOkClick();

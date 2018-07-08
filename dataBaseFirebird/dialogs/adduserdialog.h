@@ -18,8 +18,8 @@ public:
     ~addUserDialog();
 
 signals:
-    void onOkClick(int, QString, QString, int, QString, QString);
-    void onOkClick(int, int, QString, QString, int, QString, QString, bool);
+    void onOkClick(int, QString, QString, int, QString);
+    void onOkClick(int, int, QString, QString, int, QString);
 
 private slots:
     void onButtonOkClick();

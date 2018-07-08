@@ -58,6 +58,7 @@ private slots:
     void deleteUsers();
     void onEditUsersClick();
     void onUserClick();
+    void onPbDateEditClick();
 
     void updateFuels();
     void addFuels();

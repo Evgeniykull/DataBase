@@ -40,7 +40,7 @@ AddLimitsDialog::AddLimitsDialog(int limits_id, QSqlDatabase db, QWidget *parent
 
     QSqlQuery query(dataBase);
     //не удалось заменить
-    QString statament = QString("SELECT fuelid, valuel, daysd, typed, ENDDATE FROM limits WHERE id=%1").arg(QString::number(limits_id));
+    QString statament = QString("SELECT fuelid, valuel, typed, ENDDATE FROM limits WHERE id=%1").arg(QString::number(limits_id));
     qDebug() << statament;
     query.exec(statament);
     query.next();
@@ -55,7 +55,6 @@ AddLimitsDialog::AddLimitsDialog(int limits_id, QSqlDatabase db, QWidget *parent
 
     ui->cbFuels->setCurrentText(fuel_map->value(rec.value("fuelid").toInt()));
     ui->leValue->setText(rec.value("valuel").toString());
-    ui->leDays->setText(rec.value("daysd").toString());
     ui->cbType->setCurrentText(lim_type->key(rec.value("typed").toString()));
 }
 
@@ -69,14 +68,13 @@ void AddLimitsDialog::onButtonOkClick() {
     QString fuel_name = ui->cbFuels->currentText();
     int fuel_id = fuel_map->key(fuel_name);
     QString value = ui->leValue->text();
-    QString days = ui->leDays->text();
     QString type = lim_type->value(ui->cbType->currentText());
     QString endDate = ui->dtEd->date().toString("dd.MM.yy");
 
     if (limitsId > -1) {
-        emit onOkClick(limitsId, QString::number(fuel_id), value, days, type, endDate);
+        emit onOkClick(limitsId, QString::number(fuel_id), value, type, endDate);
     } else {
-        emit onOkClick(QString::number(fuel_id), value, days, type, endDate);
+        emit onOkClick(QString::number(fuel_id), value, type, endDate);
     }
     this->close();
 }

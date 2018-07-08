@@ -63,6 +63,7 @@ void MainWindow::renderToolbar() {
     connect(ui->actDirectory, SIGNAL(triggered(bool)), SLOT(onActDictionaryClick()));
     connect(ui->actConnect, SIGNAL(triggered(bool)), SLOT(onActConnectClick()));
     connect(ui->actAbout, SIGNAL(triggered(bool)), SLOT(onActAboutClick()));
+    connect(ui->pbDateEdit, SIGNAL(clicked(bool)), SLOT(onPbDateEditClick()));
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), SLOT(currentTabChanged(int)));
     connect(ui->pbAddUser, SIGNAL(clicked(bool)), SLOT(onAddUsersClick()));
@@ -402,12 +403,21 @@ void MainWindow::deleteUsers()
     add_user_model->deleteUsers(userid);
 }
 
+QString _convertData(QString data) {
+    QString newData = data.split("-")[2];
+    newData.append(".");
+    newData.append(data.split("-")[1]);
+    newData.append(".");
+    newData.append(data.split("-")[0].mid(2,2));
+    return newData;
+}
+
 void MainWindow::onUserClick() {
     ui->teUserInfo->clear();
     int idx = ui->listViewUsers->currentIndex().row();
     if (idx < 0) return;
     QString userid = model_users->record(idx).value("userid").toString();
-    QString statament = QString("SELECT userid, parentid, shortname, viewname, cardid, flags, sldate, refslim FROM users WHERE userid=%1").arg(userid);
+    QString statament = QString("SELECT userid, parentid, shortname, viewname, cardid, flags, sldate FROM users WHERE userid=%1").arg(userid);
     QSqlQuery _q(statament);
     _q.exec();
     _q.first();
@@ -423,9 +433,24 @@ void MainWindow::onUserClick() {
             "Имя пользователя: " + _q.record().value("viewname").toString() + "\n" +
             "ID Карты: " + _q.record().value("cardid").toString() + "\n" +
             "Флаги: " + _q.record().value("flags").toString() + "\n" +
-            "Дата введения: " + _q.record().value("sldate").toString() + "\n" +
-            "Необходимость обновить: " + _q.record().value("refslim").toString() + "\n";
+            "Дата введения: " + _q.record().value("sldate").toString() + "\n";
     ui->teUserInfo->setText(user_info);
+
+    QString sldate1 = _convertData(_q.record().value("SLDATE").toString());
+    QStringList sl = sldate1.split(".");
+    QDate date = QDate::fromString(sl[0]+"."+sl[1]+"."+sl[2], "dd.MM.yy");
+    ui->dateEdit->setDate(date);
+}
+
+void MainWindow::onPbDateEditClick() {
+    int idx = ui->listViewUsers->currentIndex().row();
+    if (idx < 0) return;
+    int userid = model_users->record(idx).value("userid").toInt();
+    QString statament = QString("UPDATE users SET sldate='%1' WHERE userid=%2")
+            .arg(ui->dateEdit->date().toString("dd.MM.yy"))
+            .arg(userid);
+    QSqlQuery _q(statament);
+    _q.exec();
 }
 
 ///////////////////////////////////////////////
@@ -560,7 +585,7 @@ void MainWindow::updateLimits() {
 
     model_limits->setTable("limits");
     model_limits->setRelation(2, QSqlRelation("FUELS", "FUELDID", "NAME"));
-    model_limits->setRelation(5, QSqlRelation("LIMITS_TYPE", "LIMID", "LIMTYPENAME"));
+    model_limits->setRelation(4, QSqlRelation("LIMITS_TYPE", "LIMID", "LIMTYPENAME"));
     model_limits->setEditStrategy(QSqlTableModel::OnManualSubmit);
     QString _filter = QString("userid=%1 and limgroup=%2").arg(user_id).arg(_q.record().value("LIMGROUP").toString());
     model_limits->setFilter(_filter);
@@ -571,7 +596,7 @@ void MainWindow::updateLimits() {
 
     model_new_limits->setTable("limits");
     model_new_limits->setRelation(2, QSqlRelation("FUELS", "FUELDID", "NAME"));
-    model_new_limits->setRelation(5, QSqlRelation("LIMITS_TYPE", "LIMID", "LIMTYPENAME"));
+    model_new_limits->setRelation(4, QSqlRelation("LIMITS_TYPE", "LIMID", "LIMTYPENAME"));
     model_new_limits->setEditStrategy(QSqlTableModel::OnManualSubmit);
     QString filter = QString("userid=%1 and limgroup=%2").arg(user_id).arg(_q.record().value("NEWLIMGROUP").toString());
     model_new_limits->setFilter(filter);
@@ -1022,7 +1047,7 @@ void MainWindow::getUserIndex() {
     }
 
 // Перебираем все записи базы данных
-    QString statament = QString("SELECT USERID, PARENTID, VIEWNAME, FLAGS, CARDID, SLDATE, REFSLIM FROM users"); //.arg(QString::number(userId));
+    QString statament = QString("SELECT USERID, PARENTID, VIEWNAME, FLAGS, CARDID, SLDATE FROM users"); //.arg(QString::number(userId));
     query.exec(statament);
     while (query.next()) {
       int base_uid=query.value("USERID").toInt();
@@ -1033,8 +1058,9 @@ void MainWindow::getUserIndex() {
               .arg(query.value("VIEWNAME").toString())
               .arg(query.value("FLAGS").toString())
               .arg(query.value("CARDID").toString())
-              .arg(convertData(query.value("SLDATE").toString()))
-              .arg(query.value("REFSLIM").toString());
+              .arg(convertData(query.value("SLDATE").toString()));
+      //как обновлять без REFSLIM?
+      // !!!
       if (query.value("REFSLIM").toInt()) {
 // Обновляем лимиты
         int limcnt=0;
